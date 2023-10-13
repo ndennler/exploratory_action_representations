@@ -7,30 +7,8 @@ from dataloader import ChoiceDataset
 from torch.utils.data import DataLoader
 from torch import optim
 
-class FeatureLearner(nn.Module):
+from model_definitions import FeatureLearner
 
-  def __init__(
-      self,
-      input_dim: int = 1024,
-      hidden_dim: int = 256,
-      latent_dim: int=32,
-      device: str = "cuda"
-  ):
-    super(FeatureLearner, self).__init__()
-    self.device = device
-
-    self.encoder = nn.Sequential(
-        nn.Flatten(),
-        nn.Linear(input_dim, hidden_dim),
-        nn.ReLU(),
-        nn.Linear(hidden_dim, hidden_dim),
-        nn.ReLU(),
-        nn.Linear(hidden_dim, latent_dim),
-    )
-    ######### Your code ends here #########
-
-  def forward(self, x):
-    return self.encoder(x)
 
 def train_single_epoch(
     model: nn.Module,
