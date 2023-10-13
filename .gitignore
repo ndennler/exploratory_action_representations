@@ -1,1 +1,3 @@
 preprocess*
+*__pycache__*
+*.pyc
