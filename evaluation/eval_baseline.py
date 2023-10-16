@@ -10,57 +10,6 @@ from torch.utils.data import DataLoader
 from torchmetrics import Accuracy
 from torch import optim
 
-class FeatureLearner(nn.Module):
-
-  def __init__(
-      self,
-      input_dim: int = 1024,
-      hidden_dim: int = 256,
-      latent_dim: int=32,
-      device: str = "cuda"
-  ):
-    super(FeatureLearner, self).__init__()
-    self.device = device
-
-    self.encoder = nn.Sequential(
-        nn.Flatten(),
-        nn.Linear(input_dim, hidden_dim),
-        nn.ReLU(),
-        nn.Linear(hidden_dim, hidden_dim),
-        nn.ReLU(),
-        nn.Linear(hidden_dim, latent_dim),
-    )
-    ######### Your code ends here #########
-
-  def forward(self, x):
-    return self.encoder(x)
-
-
-class RewardLearner(nn.Module):
-
-  def __init__(
-      self,
-      input_dim: int = 1024,
-      hidden_dim: int = 256,
-      device: str = "cuda"
-  ):
-    super(RewardLearner, self).__init__()
-    self.device = device
-
-    self.encoder = nn.Sequential(
-        nn.Flatten(),
-        nn.Linear(input_dim, hidden_dim),
-        nn.ReLU(),
-        nn.Linear(hidden_dim, hidden_dim),
-        nn.ReLU(),
-        nn.Linear(hidden_dim, 1),
-    )
-
-  def forward(self, x):
-    return self.encoder(x)
-
-
-
 
 def train_single_epoch(
     embedding_model: nn.Module,

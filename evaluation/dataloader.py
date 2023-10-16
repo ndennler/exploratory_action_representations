@@ -11,6 +11,9 @@ from torchvision import transforms
 from torch.utils.data import DataLoader, Dataset
 
 class QueryDataset(Dataset):
+    '''
+    Dataset to load all query data
+    '''
     def __init__(self, df, train=True, transform=None, kind='visual'):
         self.is_train = train
         self.transform = transform
