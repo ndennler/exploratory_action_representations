@@ -7,7 +7,7 @@ class ContrastivePretrainedLearner(nn.Module):
       self,
       input_dim: int = 1024,
       hidden_dim: int = 256,
-      latent_dim: int=32,
+      latent_dim: int = 32,
       device: str = "cuda:0"
   ):
     super(ContrastivePretrainedLearner, self).__init__()
@@ -32,7 +32,7 @@ class AEPretrainedLearner(nn.Module):
       self,
       input_dim: int = 1024,
       hidden_dim: int = 256,
-      latent_dim: int= 32,
+      latent_dim: int = 32,
       device: str = "cuda:0"
   ):
     super(AEPretrainedLearner, self).__init__()
@@ -60,5 +60,30 @@ class AEPretrainedLearner(nn.Module):
     return self.decoder(self.encoder(x))
   
   def encode(self, x):
+    return self.encoder(x)
+  
+
+class RandomPretrainedLearner(nn.Module):
+
+  def __init__(
+      self,
+      input_dim: int = 1024,
+      hidden_dim: int = 256,
+      latent_dim: int = 32,
+      device: str = "cuda:0"
+  ):
+    super(ContrastivePretrainedLearner, self).__init__()
+    self.device = device
+
+    self.encoder = nn.Sequential(
+        nn.Flatten(),
+        nn.Linear(input_dim, hidden_dim),
+        nn.ReLU(),
+        nn.Linear(hidden_dim, hidden_dim),
+        nn.ReLU(),
+        nn.Linear(hidden_dim, latent_dim),
+    )
+
+  def forward(self, x):
     return self.encoder(x)
   

@@ -17,9 +17,16 @@ class ChoiceDataset(Dataset):
         
         if kind == 'visual':
             self.embeddings = np.load('../data/visual/visual_pretrained_embeddings.npy')
+        elif kind == 'auditory':
+            self.embeddings = np.load('../data/auditory/auditory_pretrained_embeddings.npy')
+        elif kind == 'kinesthetic':
+            self.embeddings = np.load('../data/kinetic/kinetic_pretrained_embeddings.npy')
             
         self.data = df
         
+    def get_input_dim(self):
+        return self.embeddings.shape[1]
+    
     def __len__(self):
         return len(self.data)
     
@@ -27,6 +34,8 @@ class ChoiceDataset(Dataset):
 
         d = self.data.iloc[item]
         selected, unselected = d['chosen'].split(','), d['options'].split(',')
+
+        # print(d)
 
         anchor_set = selected
         negative_set = unselected
