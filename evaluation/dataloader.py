@@ -20,10 +20,17 @@ class QueryDataset(Dataset):
         self.kind = kind
         
         if kind == 'visual':
-            self.embeddings = np.load('../data/visual_large_embeddings.npy')
+            self.embeddings = np.load('./data/visual/visual_pretrained_embeddings.npy')
+        if kind == 'auditory':
+            self.embeddings = np.load('./data/auditory/auditory_pretrained_embeddings.npy')
+        if kind == 'kinesthetic':
+            self.embeddings = np.load('./data/kinetic/kinetic_pretrained_embeddings.npy')
             
         self.data = df
-        
+
+    def get_single_item_by_index(self, index):
+        return self.transform(self.embeddings[index]).unsqueeze(0)
+      
     def __len__(self):
         return len(self.data)
     
@@ -37,6 +44,9 @@ class QueryDataset(Dataset):
                 self.transform(self.embeddings[options[1]]), \
                 self.transform(self.embeddings[options[2]]), \
                 torch.tensor(selected_index)
+    
+    
+
 
         
 if __name__ == '__main__':

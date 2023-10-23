@@ -16,11 +16,11 @@ class ChoiceDataset(Dataset):
         self.kind = kind
         
         if kind == 'visual':
-            self.embeddings = np.load('../data/visual/visual_pretrained_embeddings.npy')
+            self.embeddings = np.load('./data/visual/visual_pretrained_embeddings.npy')
         elif kind == 'auditory':
-            self.embeddings = np.load('../data/auditory/auditory_pretrained_embeddings.npy')
+            self.embeddings = np.load('./data/auditory/auditory_pretrained_embeddings.npy')
         elif kind == 'kinesthetic':
-            self.embeddings = np.load('../data/kinetic/kinetic_pretrained_embeddings.npy')
+            self.embeddings = np.load('./data/kinetic/kinetic_pretrained_embeddings.npy')
             
         self.data = df
         
@@ -58,7 +58,7 @@ class ChoiceDataset(Dataset):
 
 if __name__ == '__main__':
     kind = 'visual'
-    df = pd.read_csv('../data/plays_and_options.csv')
+    df = pd.read_csv('./data/plays_and_options.csv')
     df = df.query(f'type == "{kind}"')
 
     dataset = ChoiceDataset(df,train=True, kind='visual', transform=torch.Tensor)
