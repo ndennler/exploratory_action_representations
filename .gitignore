@@ -1,4 +1,4 @@
 preprocess*
 *__pycache__*
 *.pyc
-*trained_models*
+*trained_models/*

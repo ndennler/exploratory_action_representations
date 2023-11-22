@@ -3,6 +3,7 @@ import torch
 from typing import Callable
 
 import numpy as np
+from sklearn.model_selection import LeaveOneOut
 
 import torch.nn as nn
 from evaluation.dataloader import QueryDataset
@@ -30,36 +31,37 @@ def get_train_test_dataloaders(
     signal_modality: str,
     signal: str,
     batch_size: int = 32,
-    train_only: bool = False,
-    expanded_queries: bool = False
+    train_only: bool = False
 ):
-  train_df = pd.read_csv('./data/evaluation/train_queries.csv')
-  if train_only:
-    train_df = pd.read_csv('./data/evaluation/all_queries.csv')
+  loo = LeaveOneOut()
+
+  train_dataloaders = [] 
+  test_dataloaders = []
+
+  train_df = pd.read_csv('./data/evaluation/all_queries.csv')
   df = train_df.query(f'type == "{signal_modality}" and pid == {PID} and signal == "{signal}"')
-
-  if len(df) < 1:
-    raise Exception(f'not enough data for PID {PID}')
-
-  dataset = QueryDataset(df, train=True, kind=signal_modality, transform=torch.Tensor)
-  train_dataloader = DataLoader(dataset, batch_size=batch_size)
-
-  if train_only:
-    return train_dataloader
-
-  if expanded_queries:
-    test_df = pd.read_csv('./data/evaluation/expanded_test_queries.csv')
-  else:
-    test_df = pd.read_csv('./data/evaluation/test_queries.csv')
-
-  df = test_df.query(f'type == "{signal_modality}" and pid == {PID} and signal == "{signal}"')
   if len(df) < 1:
     raise Exception(f'not enough data for PID {PID}')
   
   dataset = QueryDataset(df, train=True, kind=signal_modality, transform=torch.Tensor)
-  test_dataloader = DataLoader(dataset, batch_size=batch_size)
+  train_dataloader = DataLoader(dataset, batch_size=batch_size)
 
-  return train_dataloader, test_dataloader
+  if train_only:
+    return [train_dataloader], [None]
+  
+  for train_index, test_index in loo.split(df):
+    # Access the rows in the DataFrame using iloc
+    train_set = df.iloc[train_index]
+    dataset = QueryDataset(train_set, train=True, kind=signal_modality, transform=torch.Tensor)
+    train_dataloader = DataLoader(dataset, batch_size=batch_size)
+    train_dataloaders.append(train_dataloader)
+
+    test_set = df.iloc[test_index]
+    dataset = QueryDataset(test_set, train=True, kind=signal_modality, transform=torch.Tensor)
+    test_dataloader = DataLoader(dataset, batch_size=batch_size)
+    test_dataloaders.append(test_dataloader)
+
+  return train_dataloaders, test_dataloaders
 
 
 def train_single_epoch(

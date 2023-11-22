@@ -7,7 +7,7 @@ import pandas as pd
 import numpy as np
 import os
 
-from train.model_definitions import ContrastiveAEPretrainedLearner,ContrastivePretrainedLearner, AEPretrainedLearner, RandomPretrainedLearner
+from train.model_definitions import ContrastiveAEPretrainedLearner,ContrastivePretrainedLearner, AEPretrainedLearner, RandomPretrainedLearner, VAEPretrainedLearner
 from evaluation.model_definitions import RewardLearner
 from evaluation.eval_utils import get_pids_for_training, get_train_test_dataloaders, train_single_epoch, eval_model, calc_reward
 
@@ -21,10 +21,9 @@ SIGNAL_MODALITY = 'kinesthetic' # must be one of 'visual', 'auditory', or 'kines
 EMBEDDING_TYPE =  'contrastive+autoencoder' # must be one of 'contrastive+autoencoder', 'contrastive', 'autoencoder', or 'random'
 
 CALC_REWARD = False # true if you only want to calculate the final reward
-USE_EXTENDED_DATA = False
 
 embedding_size = 16 # has to be the same as the training embedding size
-seed=10
+seed=11
 #########################################
 #                                       #
 #         Evaluation Procedure          #
@@ -33,7 +32,7 @@ seed=10
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
 for SIGNAL_MODALITY in ['visual', 'auditory', 'kinesthetic']:
-    for EMBEDDING_TYPE in ['contrastive+autoencoder', 'contrastive', 'autoencoder','random']: 
+    for EMBEDDING_TYPE in ['contrastive+autoencoder', 'contrastive', 'autoencoder','VAE', 'random']: 
         for signal in ['idle', 'searching', 'has_item', 'has_information']:
 
             embedding_model = torch.load(f'./trained_models/{SIGNAL_MODALITY}_{EMBEDDING_TYPE}_{signal}_{embedding_size}.pth')
@@ -50,42 +49,46 @@ for SIGNAL_MODALITY in ['visual', 'auditory', 'kinesthetic']:
                     final_data = pd.read_csv('./data/evaluation/concatenated_final_signals.csv')
                     final_data = final_data.query(f'pid=={pid} & signal=="{signal}"')[SIGNAL_MODALITY].values[0]
                 else:
-                    train_data, test_data = get_train_test_dataloaders(pid, SIGNAL_MODALITY, signal, expanded_queries=USE_EXTENDED_DATA)
+                    training_sets, testing_sets = get_train_test_dataloaders(pid, SIGNAL_MODALITY, signal)
                 
-                reward_model = RewardLearner(embedding_size)
+                
+                for train_data, test_data in zip(training_sets, testing_sets):
 
-                for epoch in range(20):
-                    train_single_epoch(
-                        embedding_model=embedding_model,
-                        reward_model=reward_model,
-                        loss_fn= nn.CrossEntropyLoss(),
-                        data_loader=train_data,
-                        optimizer=optim.Adam(reward_model.parameters()),
-                        epoch=epoch,
-                        device=device
-                    )
-                
-                if CALC_REWARD:
-                    reward = calc_reward(
+                    reward_model = RewardLearner(embedding_size)
+
+                    for epoch in range(30):
+                        train_single_epoch(
                             embedding_model=embedding_model,
                             reward_model=reward_model,
+                            loss_fn= nn.CrossEntropyLoss(),
                             data_loader=train_data,
-                            index=final_data,
+                            optimizer=optim.Adam(reward_model.parameters()),
+                            epoch=epoch,
                             device=device
                         )
-                    results.append(reward)
-                else:
-                    acc = eval_model(
-                            embedding_model=embedding_model,
-                            reward_model=reward_model,
-                            eval_fn=Accuracy(task="multiclass", num_classes=4).to(device),
-                            data_loader=test_data,
-                            device=device
-                        )
-                    results.append(acc)
+                    
+                    if CALC_REWARD:
+                        reward = calc_reward(
+                                embedding_model=embedding_model,
+                                reward_model=reward_model,
+                                data_loader=train_data,
+                                index=final_data,
+                                device=device
+                            )
+                        results.append(reward)
+                    else:
+                        acc = eval_model(
+                                embedding_model=embedding_model,
+                                reward_model=reward_model,
+                                eval_fn=Accuracy(task="multiclass", num_classes=4).to(device),
+                                data_loader=test_data,
+                                device=device
+                            )
+                        results.append(acc)
+
+
 
             data = []
-
             for res in results:
                 if not np.isnan(res):
                     data.append({

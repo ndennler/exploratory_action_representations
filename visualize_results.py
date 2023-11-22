@@ -12,7 +12,7 @@ df = pd.read_csv('./data/results.csv')
 means = df.groupby(['modality', 'signal', 'embedding_type', 'seed'])['metric'].mean()
 means = means.reset_index()
 
-translation_dict = {'contrastive+autoencoder': 'CLEA+AE (ours)', 'contrastive': 'CLEA (ours)', 'autoencoder': 'AE', 'random': 'Random',}
+translation_dict = {'contrastive+autoencoder': 'CLEA+AE (ours)', 'contrastive': 'CLEA (ours)', 'autoencoder': 'AE', 'random': 'Random', 'VAE': 'VAE'}
 means['embedding_type'] = means['embedding_type'].replace(translation_dict)
 
 translation_dict = {'kinesthetic': 'Kinetic', 'auditory': 'Auditory', 'visual': 'Visual'}
@@ -33,7 +33,7 @@ print(pg.welch_anova(data=means[means['modality'] == 'Kinetic'], dv='metric', be
 # print(df.groupby(['embedding_type', 'modality', 'signal'])['metric'].mean())
 
 
-ax = sns.barplot(data=means, x='modality', order=['Visual', 'Auditory', 'Kinetic'], y='metric', hue='embedding_type', hue_order=['Random','AE','CLEA (ours)', 'CLEA+AE (ours)'], errorbar='se', capsize=0.1, errwidth=1.5)
+ax = sns.barplot(data=means, x='modality', order=['Visual', 'Auditory', 'Kinetic'], y='metric', hue='embedding_type', hue_order=['Random', 'VAE', 'CLEA (ours)', 'CLEA+AE (ours)'], errorbar='se', capsize=0.1, errwidth=1.5)
 # sns.lineplot(data=df, x='embedding_size', y='metric', hue='embedding_type', errorbar='se')
 plt.ylabel('Choice Accuracy')
 plt.xlabel('Modality')
@@ -42,7 +42,7 @@ legend = plt.legend(ncol=2)
 legend.set_bbox_to_anchor((1.06, 1.2)) 
 legend.set_title("")
 plt.tight_layout()
-# plt.show()
+plt.show()
 
 ms = means.groupby(['embedding_type', 'modality', 'signal'])['metric'].mean()
 ms = ms.reset_index()
@@ -50,7 +50,7 @@ stds = means.groupby(['embedding_type', 'modality', 'signal'])['metric'].std()
 std=stds.reset_index()
 # print(ms)
 
-for method in ['Random', 'AE', 'CLEA (ours)', 'CLEA+AE (ours)']:
+for method in ['Random', 'VAE', 'CLEA (ours)', 'CLEA+AE (ours)']:
     string = method + ' & '
     for modality in ['Visual', 'Auditory', 'Kinetic']:
         for signal in ['idle', 'searching', 'has_item', 'has_information']:
