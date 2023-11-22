@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 #########################################
 
 SIGNAL_MODALITY = 'visual' # must be one of 'visual', 'auditory', or 'kinesthetic'
-EMBEDDING_TYPE = 'contrastive+autoencoder' # must be one of 'contrastive+autoencoder', 'contrastive', 'autoencoder', or 'random'
+EMBEDDING_TYPE = 'VAE' # must be one of 'VAE', 'contrastive+autoencoder', 'contrastive', 'autoencoder', or 'random'
 
 embedding_size = 128
 device = "cuda:0" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
@@ -37,8 +37,8 @@ for signal in ['idle', 'searching', 'has_item', 'has_information']:
             loss_fn = nn.TripletMarginLoss()
         elif EMBEDDING_TYPE == 'autoencoder' or EMBEDDING_TYPE == 'contrastive+autoencoder':
             loss_fn = nn.MSELoss()
-        # elif EMBEDDING_TYPE == 'VAE':
-        #     loss_fn = model.vae_loss
+        elif EMBEDDING_TYPE == 'VAE':
+            loss_fn = model.vae_loss
 
         model.to(device)
         

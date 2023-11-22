@@ -9,7 +9,7 @@ from torch import optim
 
 from train.model_definitions import ContrastivePretrainedLearner, AEPretrainedLearner, VAEPretrainedLearner, RandomPretrainedLearner, ContrastiveAEPretrainedLearner
 
-from train.model_definitions import RawImageEncoder, RawImageAE
+from train.model_definitions import RawImageEncoder, RawImageAE, RawImageVAE
 
 '''
 
@@ -81,6 +81,12 @@ def get_raw_data_model(model_type,
   if model_type in ['autoencoder', 'contrastive+autoencoder']:
     if kind in ['visual', 'auditory']:
       return RawImageAE(input_dim, kind, hidden_dim, latent_dim, device=device)
+    else:
+      return None
+    
+  if model_type in ['VAE']:
+    if kind in ['visual', 'auditory']:
+      return RawImageVAE(input_dim, kind, hidden_dim, latent_dim, device=device)
     else:
       return None
   
