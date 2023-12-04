@@ -7,7 +7,7 @@ import numpy as np
 sns.set_theme(style="ticks", font_scale=1.3)
 plt.figure(figsize=(5,6))
 
-df = pd.read_csv('./data/results.csv')
+df = pd.read_csv('./data/results_from_raw.csv')
 
 means = df.groupby(['modality', 'signal', 'embedding_type', 'seed'])['metric'].mean()
 means = means.reset_index()
@@ -33,31 +33,38 @@ print(pg.welch_anova(data=means[means['modality'] == 'Kinetic'], dv='metric', be
 # print(df.groupby(['embedding_type', 'modality', 'signal'])['metric'].mean())
 
 
-ax = sns.barplot(data=means, x='modality', order=['Visual', 'Auditory', 'Kinetic'], y='metric', hue='embedding_type', hue_order=['Random', 'VAE', 'CLEA (ours)', 'CLEA+AE (ours)'], errorbar='se', capsize=0.1, errwidth=1.5)
+ax = sns.barplot(data=means, x='modality', order=['Visual', 'Auditory', 'Kinetic'], y='metric', hue='embedding_type', hue_order=['Random', 'AE', 'VAE', 'CLEA (ours)', 'CLEA+AE (ours)'], errorbar='se', capsize=0.1, errwidth=1.5)
 # sns.lineplot(data=df, x='embedding_size', y='metric', hue='embedding_type', errorbar='se')
-plt.ylabel('Choice Accuracy')
+plt.ylabel('Choice Prediction Accuracy')
 plt.xlabel('Modality')
 
 legend = plt.legend(ncol=2)
-legend.set_bbox_to_anchor((1.06, 1.2)) 
+legend.set_bbox_to_anchor((1.06, 1.3)) 
 legend.set_title("")
 plt.tight_layout()
 plt.show()
 
+means = means.dropna()
+
 ms = means.groupby(['embedding_type', 'modality', 'signal'])['metric'].mean()
 ms = ms.reset_index()
+
 stds = means.groupby(['embedding_type', 'modality', 'signal'])['metric'].std()
-std=stds.reset_index()
+std = stds.reset_index()
 # print(ms)
 
-for method in ['Random', 'VAE', 'CLEA (ours)', 'CLEA+AE (ours)']:
-    string = method + ' & '
-    for modality in ['Visual', 'Auditory', 'Kinetic']:
+for modality in ['Visual', 'Auditory', 'Kinetic']:
+    for method in ['Random', 'VAE', 'AE', 'CLEA (ours)', 'CLEA+AE (ours)']:
+        string = modality + ' & ' + method + ' & '
+    
         for signal in ['idle', 'searching', 'has_item', 'has_information']:
             m = ms.query(f'embedding_type == "{method}" & modality == "{modality}" & signal == "{signal}"')['metric'].values[0]
             s = std.query(f'embedding_type == "{method}" & modality == "{modality}" & signal == "{signal}"')['metric'].values[0]
 
             string += '\small' + f'{m:.2f} \\tiny $\pm$ '.lstrip('0') +  f'{s:.2f} &'.lstrip('0')
 
-    print(string)
-    print("\n")
+        print(string[:-2] + '\\\\' )
+        print("\n")
+
+
+print(means.groupby(['embedding_type', 'modality'])['metric'].mean())

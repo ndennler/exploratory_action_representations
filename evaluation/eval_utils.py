@@ -5,8 +5,9 @@ from typing import Callable
 import numpy as np
 from sklearn.model_selection import LeaveOneOut
 
+import os
 import torch.nn as nn
-from evaluation.dataloader import QueryDataset
+from evaluation.dataloader import QueryDataset, RawQueryDataset, CachedRawQueryDataset
 from torch.utils.data import DataLoader
 from torchmetrics import Accuracy
 from torch import optim
@@ -31,7 +32,9 @@ def get_train_test_dataloaders(
     signal_modality: str,
     signal: str,
     batch_size: int = 32,
-    train_only: bool = False
+    train_only: bool = False,
+    raw_data: bool = False,
+    model_name: str = None
 ):
   loo = LeaveOneOut()
 
@@ -43,7 +46,10 @@ def get_train_test_dataloaders(
   if len(df) < 1:
     raise Exception(f'not enough data for PID {PID}')
   
-  dataset = QueryDataset(df, train=True, kind=signal_modality, transform=torch.Tensor)
+  if raw_data:
+    dataset = CachedRawQueryDataset(df, train=True, transform=torch.Tensor, name=model_name)
+  else:
+    dataset = QueryDataset(df, train=True, kind=signal_modality, transform=torch.Tensor)
   train_dataloader = DataLoader(dataset, batch_size=batch_size)
 
   if train_only:
@@ -52,12 +58,19 @@ def get_train_test_dataloaders(
   for train_index, test_index in loo.split(df):
     # Access the rows in the DataFrame using iloc
     train_set = df.iloc[train_index]
-    dataset = QueryDataset(train_set, train=True, kind=signal_modality, transform=torch.Tensor)
+
+    if raw_data:
+      dataset = CachedRawQueryDataset(train_set, train=True, transform=torch.Tensor, name=model_name)
+    else:
+      dataset = QueryDataset(train_set, train=True, kind=signal_modality, transform=torch.Tensor)
     train_dataloader = DataLoader(dataset, batch_size=batch_size)
     train_dataloaders.append(train_dataloader)
 
     test_set = df.iloc[test_index]
-    dataset = QueryDataset(test_set, train=True, kind=signal_modality, transform=torch.Tensor)
+    if raw_data:
+      dataset = CachedRawQueryDataset(test_set, train=True, transform=torch.Tensor, name=model_name)
+    else:
+      dataset = QueryDataset(test_set, train=True, kind=signal_modality, transform=torch.Tensor)
     test_dataloader = DataLoader(dataset, batch_size=batch_size)
     test_dataloaders.append(test_dataloader)
 
@@ -79,7 +92,7 @@ def train_single_epoch(
   reward_model.train()
   reward_model.to(device)
   train_loss = 0
-  for batch_idx, (option1, option2, option3, choice) in enumerate(data_loader):
+  for batch_idx, (option1, option2, option3, choice, option_idxs) in enumerate(data_loader):
 
     option1= option1.to(device)
     option2 = option2.to(device)
@@ -88,9 +101,15 @@ def train_single_epoch(
 
     optimizer.zero_grad()
 
-    r1 = reward_model(embedding_model.encode(option1))
-    r2 = reward_model(embedding_model.encode(option2))
-    r3 = reward_model(embedding_model.encode(option3))
+    # comment out if we are using raw data
+    option1 = embedding_model.encode(option1)
+    option2 = embedding_model.encode(option2)
+    option3 = embedding_model.encode(option3)
+
+    r1 = reward_model(option1)
+    r2 = reward_model(option2)
+    r3 = reward_model(option3)
+
     r4 = torch.zeros(r1.shape).to(device)
     rewards = torch.cat((r1,r2,r3,r4), 1)
     # compute loss
@@ -106,7 +125,9 @@ def train_single_epoch(
             100. * batch_idx / len(data_loader), loss.item() / len(option1)))
 
   print('====> Epoch: {} Average loss: {:.4f}'.format(epoch, train_loss / len(data_loader.dataset)))
-
+  # print(precomputed_embeds)
+  # return precomputed_embeds
+  
 
 
 
@@ -123,7 +144,7 @@ def eval_model(
   reward_model.to(device)
 
   eval_values = []
-  for batch_idx, (option1, option2, option3, choice) in enumerate(data_loader):
+  for batch_idx, (option1, option2, option3, choice, _) in enumerate(data_loader):
 
     option1= option1.to(device)
     option2 = option2.to(device)
@@ -133,6 +154,11 @@ def eval_model(
     r1 = reward_model(embedding_model.encode(option1))
     r2 = reward_model(embedding_model.encode(option2))
     r3 = reward_model(embedding_model.encode(option3))
+
+    # r1 = reward_model(option1)
+    # r2 = reward_model(option2)
+    # r3 = reward_model(option3)
+
     r4 = torch.zeros(r1.shape).to(device)
     rewards = torch.cat((r1,r2,r3,r4), 1).to(device)
     # compute loss
@@ -158,3 +184,37 @@ def calc_reward(
   reward = reward_model(embedding_model.encode(option1)).cpu().item()
 
   return reward
+
+
+def generate_embeddings(model, model_str, kind, embedding_size, device: str = 'cuda'):
+  
+  if os.path.exists(f'./data/embeds/{model_str}.npy'):
+    return
+  
+  train_df = pd.read_csv('./data/evaluation/all_queries.csv').query(f'type=="{kind}"')
+  dataset = RawQueryDataset(train_df, train=True, kind=kind, transform=torch.Tensor)
+  train_dataloader = DataLoader(dataset, batch_size=32)
+
+  model.eval()
+  model.to(device)
+
+  array = np.zeros((len(dataset.stimulus_mapping), embedding_size))
+
+  for batch_idx, (option1, option2, option3, choice, option_idxs) in enumerate(train_dataloader):
+    print(batch_idx)
+    embeds = model.encode(option1.to(device))
+    for i,em in zip(option_idxs[0], embeds):
+      array[int(i), :] = em.detach().cpu().numpy()
+
+    embeds = model.encode(option2.to(device))
+    for i,em in zip(option_idxs[1], embeds):
+      array[int(i), :] = em.detach().cpu().numpy()
+
+    embeds = model.encode(option3.to(device))
+    for i,em in zip(option_idxs[2], embeds):
+      array[int(i), :] = em.detach().cpu().numpy()
+    
+
+  np.save(f'./data/embeds/{model_str}.npy', array)
+
+  # raise Exception('break!')

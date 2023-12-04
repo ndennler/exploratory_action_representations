@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 SIGNAL_MODALITY = 'visual' # must be one of 'visual', 'auditory', or 'kinesthetic'
 EMBEDDING_TYPE = 'random' # must be one of 'contrastive+autoencoder', 'contrastive', 'autoencoder', or 'random'
 
-embedding_size = 16
+embedding_size = 128
 device = 'cpu' #  "cuda:0" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
 
 #########################################
@@ -23,7 +23,7 @@ device = 'cpu' #  "cuda:0" if torch.cuda.is_available() else "mps" if torch.back
 #                                       #
 #########################################
 for SIGNAL_MODALITY in ['visual', 'auditory', 'kinesthetic']:
-    for EMBEDDING_TYPE in ['VAE']:#, 'contrastive+autoencoder', 'contrastive', 'autoencoder','random']:
+    for EMBEDDING_TYPE in ['VAE', 'contrastive+autoencoder', 'contrastive', 'autoencoder','random']:
         for signal in ['idle', 'searching', 'has_item', 'has_information']:
             dataset, input_dim = get_dataloader(SIGNAL_MODALITY, signal)
             model = get_model(EMBEDDING_TYPE, latent_dim=embedding_size, input_dim=input_dim, device=device)
@@ -41,7 +41,7 @@ for SIGNAL_MODALITY in ['visual', 'auditory', 'kinesthetic']:
 
                 model.to(device)
                 
-                for epoch in range(500):
+                for epoch in range(300):
                     iterations, avg_loss = train_single_epoch(EMBEDDING_TYPE, model, loss_fn, dataset, optimizer, epoch, device)
                     training_data.append({
                         'iterations': iterations,
