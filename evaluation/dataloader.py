@@ -11,6 +11,8 @@ from torchvision import transforms
 from torch.utils.data import DataLoader, Dataset
 from PIL import Image
 
+TASK_INDEX_MAPPING = {'idle': 0, 'searching': 1, 'has_information': 2, 'has_item': 3}
+
 class QueryDataset(Dataset):
     '''
     Dataset to load all query data
@@ -50,11 +52,14 @@ class QueryDataset(Dataset):
 
 
 class RawQueryDataset(Dataset):
-    def __init__(self, df, train=True, transform=None, kind='visual', data_dir='./data/'):
+    def __init__(self, df, train=True, transform=None, kind='visual', data_dir='./data/', task_embedding=False):
         self.is_train = train
         self.transform = transform
         self.kind = kind
+
+        self.task_embedding = task_embedding
         self.indexer_csv_location = data_dir + 'all_data.csv'
+
         
         if kind == 'visual':
             self.stimulus_mapping = pd.read_csv(self.indexer_csv_location).query('type=="Video"')
@@ -113,7 +118,18 @@ class RawQueryDataset(Dataset):
                 option2  = self.stimulus_array[self.get_stimulus_fname(options[1]), :]
                 option3 = self.stimulus_array[self.get_stimulus_fname(options[2]), :]
 
-        return self.transform(option1), self.transform(option2), self.transform(option3) ,torch.tensor(selected_index), options
+        if self.task_embedding:
+            self.task_to_index_mapping = TASK_INDEX_MAPPING
+            return self.transform(option1),  \
+                   self.transform(option2), \
+                   self.transform(option3), \
+                   torch.tensor(selected_index), options, \
+                   torch.tensor(self.task_to_index_mapping[d['signal']])
+        
+        return self.transform(option1), \
+               self.transform(option2), \
+               self.transform(option3), \
+               torch.tensor(selected_index), options
     
 
 
@@ -144,6 +160,40 @@ class CachedRawQueryDataset(Dataset):
         return self.transform(self.embeddings[options[0]]),  \
                 self.transform(self.embeddings[options[1]]), \
                 self.transform(self.embeddings[options[2]]), \
+                torch.tensor(selected_index), options
+    
+
+
+class CachedRawQueryTaskEmbeddingDataset(Dataset):
+    '''
+    Dataset to load all query data
+    '''
+    def __init__(self, df, train=True, transform=None, name=None):
+        self.is_train = train
+        self.transform = transform
+        
+        self.embeddings = np.load(f'./data/embeds/{name}.npy')
+            
+        self.data = df
+        self.task_to_index_mapping = TASK_INDEX_MAPPING
+
+    def get_single_item_by_index(self, index):
+        return self.transform(self.embeddings[index]).unsqueeze(0)
+      
+    def __len__(self):
+        return len(self.data)
+    
+    def __getitem__(self, item):
+
+        d = self.data.iloc[item]
+        options = [int(index) for index in d['query'].split(',')]
+        selected_index = int(d['choice'])
+        task_idx = int(self.task_to_index_mapping[d['signal']])
+
+        #returns embeddings for specific task index
+        return self.transform(self.embeddings[options[0], task_idx]),  \
+                self.transform(self.embeddings[options[1], task_idx]), \
+                self.transform(self.embeddings[options[2], task_idx]), \
                 torch.tensor(selected_index), options
     
 

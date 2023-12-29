@@ -10,6 +10,9 @@ from torchvision import transforms
 from torch.utils.data import DataLoader, Dataset
 from PIL import Image
 
+TASK_INDEX_MAPPING = {'idle': 0, 'searching': 1, 'has_information': 2, 'has_item': 3}
+
+
 class ChoiceDataset(Dataset):
     def __init__(self, df, train=True, transform=None, kind='visual'):
         self.is_train = train
@@ -155,7 +158,7 @@ class RawChoiceDatasetwithTaskEmbedding(Dataset):
             self.stimulus_array = np.load(data_dir + 'kinetic/behaviors.npy')
             
         self.data = df
-        self.task_to_index_mapping ={task:index for index, task in enumerate(df['signal'].unique())}
+        self.task_to_index_mapping = TASK_INDEX_MAPPING
     
     def get_stimulus_fname(self, index):
         if self.kind == 'visual':

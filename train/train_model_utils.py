@@ -187,6 +187,7 @@ def train_single_epoch_with_task_embedding(
     model_optimizer.zero_grad()
     embed_optimizer.zero_grad()
 
+    
     anchor = anchor.to(device)
     positive = positive.to(device)
     negative = negative.to(device)
@@ -196,7 +197,6 @@ def train_single_epoch_with_task_embedding(
     a_embed = model.encode(anchor)
     p_embed = model.encode(positive)
     n_embed = model.encode(negative)
-
     
 
     # compute loss
