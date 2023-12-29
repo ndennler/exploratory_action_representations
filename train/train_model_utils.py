@@ -40,7 +40,7 @@ def get_dataloader(dataset_type: str, signal_type: str, batch_size: int = 32, da
     df = pd.read_csv('./data/plays_and_options.csv')
     df = df.query(f'type == "{dataset_type}"')
     dataset = RawChoiceDatasetwithTaskEmbedding(df, train=True, kind=dataset_type, transform=torch.Tensor)
-    embedding_dataloader = DataLoader(dataset, batch_size=batch_size)
+    embedding_dataloader = DataLoader(dataset, batch_size=batch_size, num_workers=4)
 
     return embedding_dataloader, dataset.get_input_dim()
 

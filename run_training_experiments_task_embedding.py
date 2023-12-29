@@ -12,7 +12,7 @@ EMBEDDING_TYPE = 'contrastive+autoencoder' # must be one of 'VAE', 'contrastive+
 
 embedding_size = 128
 device = "cuda:0" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
-# device = 'cpu'
+device = 'cpu'
 ######################################### 
 #                                       #
 #           Training Procedure          #

@@ -18,7 +18,7 @@ FROM_RAW_DATA = True
 seed = 42
 
 device = "cuda:0" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
-device = 'cpu'
+# device = 'cpu'
 
 for SIGNAL_MODALITY in ['kinesthetic','visual', 'auditory']:
     for EMBEDDING_TYPE in ['contrastive+autoencoder', 'contrastive','autoencoder', 'random']:
