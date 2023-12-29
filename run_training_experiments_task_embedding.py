@@ -18,7 +18,7 @@ device = 'cpu'
 #           Training Procedure          #
 #                                       #
 #########################################
-for SIGNAL_MODALITY in ['kinesthetic', 'visual', 'auditory']:
+for SIGNAL_MODALITY in ['visual', 'auditory']:
     for EMBEDDING_TYPE in ['contrastive+autoencoder', 'contrastive', 'autoencoder', 'random']:
 
         if SIGNAL_MODALITY == 'kinesthetic':
