@@ -1,7 +1,7 @@
 preprocess*
 *__pycache__*
 *.pyc
-*trained_models/*
+data/trained_models/
 
 # Distribution / packaging
 .Python
