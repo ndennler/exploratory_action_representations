@@ -49,7 +49,7 @@ class RawSequenceDecoder(nn.Module):
         self.linear = nn.Linear(hidden_size//2, input_size)
     
     def forward(self, x, hidden):
-        output, hidden = self.gru(x, hidden)
+        output, hidden = self.gru(x, hidden.contiguous())
         output = self.linear(output)
         return output, hidden
 
@@ -79,7 +79,7 @@ class Seq2Seq(nn.Module):
         output_seq = []
 
         for _ in range(seq_len):
-            output, hidden = self.decoder(input, hidden)
+            output, hidden = self.decoder(input, hidden.contiguous())
             output_seq.append(output)
             input = output
         
@@ -98,7 +98,7 @@ class Seq2Seq(nn.Module):
       output_seq = []
 
       for _ in range(self.seq_len):
-          output, hidden = self.decoder(input, hidden)
+          output, hidden = self.decoder(input, hidden.contiguous())
           output_seq.append(output)
           input = output
       
@@ -139,7 +139,7 @@ class Seq2SeqVAE(nn.Module):
         output_seq = []
 
         for _ in range(seq_len):
-            output, hidden = self.decoder(input, hidden)
+            output, hidden = self.decoder(input, hidden.contiguous())
             output_seq.append(output)
             input = output
         
@@ -165,7 +165,7 @@ class Seq2SeqVAE(nn.Module):
         output_seq = []
 
         for _ in range(seq_len):
-            output, hidden = self.decoder(input, hidden)
+            output, hidden = self.decoder(input, hidden.contiguous())
             output_seq.append(output)
             input = output
         

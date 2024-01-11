@@ -93,8 +93,8 @@ if __name__ == '__main__':
     NUM_EPOCHS = 1
     DEVICE = 'mps'
 
-    for modality in ['auditory', 'visual', 'kinesthetic']:
-            for model_type in ['contrastive', 'random', 'autoencoder', 'contrastive+autoencoder']:
+    for modality in ['kinesthetic','auditory', 'visual']:
+            for model_type in ['autoencoder', 'contrastive+autoencoder', 'contrastive', 'random']:
                         
                 print(f'Training {modality} modality; {model_type} model;')
 
