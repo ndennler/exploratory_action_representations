@@ -78,6 +78,9 @@ if __name__ == '__main__':
 
                     optimizer = optim.Adam(model.parameters(), lr=LR)
                     training_results = []
+                    # set model to training mode on correct device
+                    model.train()
+                    model.to(DEVICE)
 
                     for i in tqdm(range(NUM_EPOCHS)):
                         iterations, avg_loss = train_single_epoch(embedding_type=model_type, model=model, 

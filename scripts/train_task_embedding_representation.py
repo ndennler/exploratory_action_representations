@@ -7,13 +7,13 @@ from torch import optim
 # get dataloader for a specific modality and signal.
 ############################################################################################################
 from clea.dataloaders.exploratory_loaders import RawChoiceDatasetwithTaskEmbedding
-from torch.utils.data import DataLoader
+from clea.representation_models.train_model_utils import MultiEpochsDataLoader
 
 def get_dataloader(batch_size: int, modality: str):
     df = pd.read_csv('../data/plays_and_options.csv') #TODO: make this changeable
     df = df.query(f'type == "{modality}"')
     dataset = RawChoiceDatasetwithTaskEmbedding(df, train=True, kind=modality, transform=torch.Tensor, data_dir='../data/')
-    embedding_dataloader = DataLoader(dataset, batch_size=batch_size)
+    embedding_dataloader = MultiEpochsDataLoader(dataset, batch_size=batch_size, num_workers=2, )
 
     return embedding_dataloader, dataset.get_input_dim()
 
@@ -111,6 +111,11 @@ if __name__ == '__main__':
                     optimizer = optim.Adam(model.parameters(), lr=LR)
                     embed_optimizer = optim.Adam(task_embedder.parameters(), lr=LR)
                     training_results = []
+                    # set model to training mode on correct device
+                    model.train()
+                    model.to(DEVICE)
+                    task_embedder.train()
+                    task_embedder.to(DEVICE)
 
                     for i in tqdm(range(NUM_EPOCHS)):
                         iterations, avg_loss = train_single_epoch_with_task_embedding(embedding_type=model_type, model=model, 

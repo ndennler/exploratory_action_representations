@@ -6,6 +6,37 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 from torch import optim
 
+
+class MultiEpochsDataLoader(torch.utils.data.DataLoader):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._DataLoader__initialized = False
+        self.batch_sampler = _RepeatSampler(self.batch_sampler)
+        self._DataLoader__initialized = True
+        self.iterator = super().__iter__()
+
+    def __len__(self):
+        return len(self.batch_sampler.sampler)
+
+    def __iter__(self):
+        for i in range(len(self)):
+            yield next(self.iterator)
+
+class _RepeatSampler(object):
+    """ Sampler that repeats forever.
+
+    Args:
+        sampler (Sampler)
+    """
+
+    def __init__(self, sampler):
+        self.sampler = sampler
+
+    def __iter__(self):
+        while True:
+            yield from iter(self.sampler)
+
 '''
 Methods for Training
 '''
@@ -19,9 +50,6 @@ def train_single_epoch(
     epoch: int,
     device: str = 'cuda',
 ):
-  # set model to training mode
-  model.train()
-  model.to(device)
 
   train_loss = 0
   for batch_idx, (anchor, positive, negative) in enumerate(data_loader):
@@ -78,12 +106,6 @@ def train_single_epoch_with_task_embedding(
     epoch: int,
     device: str = 'cuda',
 ):
-  # set model to training mode
-  model.train()
-  model.to(device)
-
-  task_embedder.train()
-  task_embedder.to(device)
 
   train_loss = 0
   for batch_idx, (anchor, positive, negative, task_idxs) in enumerate(data_loader):

@@ -11,4 +11,4 @@ from clea.representation_models.auditory import RawAudioEncoder, RawAudioAE, Raw
 from clea.representation_models.visual import RawImageEncoder, RawImageAE, RawImageVAE
 from clea.representation_models.kinetic import RawSequenceEncoder, Seq2Seq, Seq2SeqVAE
 
-from clea.representation_models.train_model_utils import train_single_epoch, train_single_epoch_with_task_embedding
+from clea.representation_models.train_model_utils import train_single_epoch, train_single_epoch_with_task_embedding, MultiEpochsDataLoader
