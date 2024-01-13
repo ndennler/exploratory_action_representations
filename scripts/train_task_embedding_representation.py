@@ -13,7 +13,7 @@ def get_dataloader(batch_size: int, modality: str):
     df = pd.read_csv('../data/plays_and_options.csv') #TODO: make this changeable
     df = df.query(f'type == "{modality}"')
     dataset = RawChoiceDatasetwithTaskEmbedding(df, train=True, kind=modality, transform=torch.Tensor, data_dir='../data/')
-    embedding_dataloader = MultiEpochsDataLoader(dataset, batch_size=batch_size, num_workers=2, )
+    embedding_dataloader = MultiEpochsDataLoader(dataset, batch_size=batch_size, num_workers=4, persistent_workers=True)
 
     return embedding_dataloader, dataset.get_input_dim()
 
@@ -87,13 +87,13 @@ from clea.representation_models.pretrained import TaskEmbedder
 
 if __name__ == '__main__':
 
-    BATCH_SIZE = 32
+    BATCH_SIZE = 64
     EMBEDDING_DIM = 64
     LR = 1e-4
-    NUM_EPOCHS = 1
+    NUM_EPOCHS = 20
     DEVICE = 'mps'
 
-    for modality in ['kinesthetic','auditory', 'visual']:
+    for modality in ['visual', 'auditory', 'kinesthetic']:
             for model_type in ['autoencoder', 'contrastive+autoencoder', 'contrastive', 'random']:
                         
                 print(f'Training {modality} modality; {model_type} model;')
@@ -126,6 +126,8 @@ if __name__ == '__main__':
 
                 #4. save model and data
                 torch.save(model, f'../data/trained_models/taskemb_{modality}_{model_type}_{EMBEDDING_DIM}.pth')
+                torch.save(task_embedder, f'../data/trained_models/taskemb_{modality}_{model_type}_{EMBEDDING_DIM}_embedder.pth')
+
                 pd.DataFrame(training_results).to_csv(f'../data/trained_models/taskemb_{modality}_{model_type}_{EMBEDDING_DIM}.csv')
 
 ############################################################################################################
