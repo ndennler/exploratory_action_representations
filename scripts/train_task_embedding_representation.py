@@ -90,11 +90,11 @@ if __name__ == '__main__':
     BATCH_SIZE = 64
     EMBEDDING_DIM = 64
     LR = 1e-4
-    NUM_EPOCHS = 20
+    NUM_EPOCHS = 200
     DEVICE = 'mps'
 
     for modality in ['visual', 'auditory', 'kinesthetic']:
-            for model_type in ['autoencoder', 'contrastive+autoencoder', 'contrastive', 'random']:
+            for model_type in ['VAE']: #['autoencoder', 'contrastive+autoencoder', 'contrastive', 'random']:
                         
                 print(f'Training {modality} modality; {model_type} model;')
 

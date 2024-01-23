@@ -123,10 +123,11 @@ def train_single_epoch_with_task_embedding(
       a_embed = model.encode(anchor)
       p_embed = model.encode(positive)
       n_embed = model.encode(negative)
+
     elif embedding_type in ['VAE']:
-      a_embed = model.task_forward(anchor,task_idxs)
-      p_embed = model.task_forward(positive, task_idxs)
-      n_embed = model.task_forward(negative, task_idxs)
+      a_embed = model.taskconditioned_forward(anchor, task_idxs, task_embedder)
+      p_embed = model.taskconditioned_forward(positive, task_idxs, task_embedder)
+      n_embed = model.taskconditioned_forward(negative, task_idxs, task_embedder)
     
 
     # compute loss

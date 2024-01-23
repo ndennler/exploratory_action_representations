@@ -138,13 +138,11 @@ class RawAudioVAE(nn.Module):
       hidden_dim: int = 256,
       latent_dim: int = 32,
       device: str = "cuda:0",
-      task_embedder: nn.Module = None
   ):
     super(RawAudioVAE, self).__init__()
     self.device = device
     self.nz = latent_dim
 
-    self.task_embedder = task_embedder
     self.encoder = RawAudioEncoder(input_dim, hidden_dim, 2*latent_dim, device)
     self.decoder = RawAudioDecoder(self.encoder.get_intermediate_size(), self.encoder.get_reshape_size(), hidden_dim, latent_dim, device)
 
@@ -153,18 +151,18 @@ class RawAudioVAE(nn.Module):
     z = q[:,:self.nz] + torch.exp(q[:, self.nz:]) * torch.randn([q.shape[0], self.nz], device=self.device)
     return {'q': q, 'rec': self.decoder(z)}
   
-  def task_forward(self, x, task_idxs):
+  def taskconditioned_forward(self, x, task_idxs, task_embedder):
     q = self.encoder(x)
     z = q[:,:self.nz] + torch.exp(q[:, self.nz:]) * torch.randn([q.shape[0], self.nz], device=self.device)
-    z = self.task_embedder(z, task_idxs)
+    z = task_embedder(z, task_idxs)
     return {'q': q, 'rec': self.decoder(z)}
   
   def encode(self, x):
     return self.encoder(x)[:,:self.nz]
   
-  def task_encode(self, x, task_idxs):
+  def taskconditioned_encode(self, x, task_idxs, task_embedder):
     z = self.encoder(x)[:,:self.nz]
-    return self.task_embedder(z, task_idxs)
+    return task_embedder(z, task_idxs)
   
   def kl_divergence(self, mu1, log_sigma1, mu2, log_sigma2):
     """Computes KL[p||q] between two Gaussians defined by [mu, log_sigma]."""

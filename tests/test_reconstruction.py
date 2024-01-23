@@ -19,9 +19,11 @@ def get_dataloader(batch_size: int, modality: str):
 if __name__ == "__main__":
     N_EXAMPLES = 6
     device = 'mps'
-    data, loss = get_dataloader(N_EXAMPLES, 'visual')
+    modality = 'auditory'
 
-    model_name = f'taskemb_visual_autoencoder_64'
+    data, loss = get_dataloader(N_EXAMPLES, modality)
+
+    model_name = f'taskemb_{modality}_autoencoder_64'
     model = torch.load('../data/trained_models/' + model_name + '.pth')
     model.eval()
     model.to(device)
@@ -49,7 +51,6 @@ if __name__ == "__main__":
         
         grid_img = torchvision.utils.make_grid(a_recon, nrow=N_EXAMPLES)
         im1 = grid_img.permute(1, 2, 0).cpu()
-        im1 = np.random.rand(*im1.shape)
 
         grid_img = torchvision.utils.make_grid(anchor, nrow=N_EXAMPLES)
         im2 = grid_img.permute(1, 2, 0).cpu() 

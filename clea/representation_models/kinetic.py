@@ -109,7 +109,7 @@ class Seq2Seq(nn.Module):
 
 
 class Seq2SeqVAE(nn.Module):
-    def __init__(self, input_size, hidden_size, num_layers, dropout=.2, device='cpu', task_embedder=None):
+    def __init__(self, input_size, hidden_size, num_layers, dropout=.2, device='cpu'):
         super(Seq2SeqVAE, self).__init__()
         self.input_size = input_size
         self.hidden_size = hidden_size
@@ -117,8 +117,6 @@ class Seq2SeqVAE(nn.Module):
         self.dropout = dropout
         self.device = device
         self.nz = hidden_size
-
-        self.task_embedder = task_embedder
         
         self.encoder = RawSequenceEncoder(input_size, hidden_size*2, num_layers, dropout, device)
         self.decoder = RawSequenceDecoder(input_size, hidden_size, num_layers, dropout, device)
@@ -147,7 +145,7 @@ class Seq2SeqVAE(nn.Module):
         output_seq = torch.cat(output_seq, dim=1)
         return {'q': q, 'rec': output_seq}
     
-    def task_forward(self, x, task_idxs):
+    def taskconditioned_forward(self, x, task_idxs):
         # x has shape (batch_size, seq_len, input_size)
         batch_size = x.size(0)
         seq_len = x.size(1)
@@ -176,9 +174,9 @@ class Seq2SeqVAE(nn.Module):
     def encode(self, x):
       return self.encoder(x)[:,:self.nz]
     
-    def task_encode(self, x, task_idxs):
+    def taskconditioned_encode(self, x, task_idxs, task_embedder):
       z = self.encoder(x)[:,:self.nz]
-      return self.task_embedder(z, task_idxs)
+      return task_embedder(z, task_idxs)
     
     def kl_divergence(self, mu1, log_sigma1, mu2, log_sigma2):
       """Computes KL[p||q] between two Gaussians defined by [mu, log_sigma]."""

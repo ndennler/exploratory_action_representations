@@ -1,9 +1,11 @@
 import pandas as pd
 import torch
 from typing import Callable
-
+from tqdm import tqdm
 import numpy as np
 from sklearn.model_selection import LeaveOneOut
+
+from PIL import Image
 
 import os
 import torch.nn as nn
@@ -295,6 +297,7 @@ def generate_embeddings(model, model_str, kind, embedding_size, device: str = 'c
     for i,em in zip(option_idxs[2], embeds):
       array[int(i), :] = em.detach().cpu().numpy()
 
+
 def generate_embeddings_task_conditioned(model, task_embedder, model_str, kind, embedding_size, device: str = 'cuda'):
   if os.path.exists(f'./data/embeds/{model_str}.npy'):
     print(f'embeddings already exists: {model_str}')
@@ -349,3 +352,47 @@ def generate_embeddings_task_conditioned(model, task_embedder, model_str, kind, 
   np.save(f'./data/embeds/{model_str}.npy', array)
 
   # raise Exception('break!')
+
+def generate_all_embeddings_taskconditioned(model, task_embedder, dataframe, device, data_dir='../data'):
+  model.eval()
+  model.to(device)
+  task_embedder.eval()
+  task_embedder.to(device)
+
+  out_size = task_embedder.input_size
+  embeds = np.zeros((dataframe['id'].max() + 1, 4, out_size))
+
+  print(embeds.shape)
+
+  for signal_index in range(4):
+    for i, row in tqdm(dataframe.iterrows()):
+      id = row['id']
+
+      if row['type'] == 'Video':
+        im= np.array(Image.open(f"{data_dir}/visual/vis/{row['file'].replace('mp4', 'jpg')}")) / 255.0
+        im = np.moveaxis(im, -1, 0)
+        out = model.encode(torch.Tensor(im).unsqueeze(0).to(device))
+        out = task_embedder(out, torch.Tensor([signal_index]).int().to(device))
+        embeds[id, signal_index, :] = out.detach().cpu().numpy()
+
+      elif row['type'] == 'Audio':
+        im= np.array(Image.open(f"{data_dir}/auditory/aud/{row['file'].replace('wav', 'jpg')}")) / 255.0
+        im = np.moveaxis(im, -1, 0)
+        out = model.encode(torch.Tensor(im).unsqueeze(0).to(device))
+        out = task_embedder(out, torch.Tensor([signal_index]).int().to(device))
+        embeds[id, signal_index, :] = out.detach().cpu().numpy()
+
+      elif row['type'] == 'Movement':
+        trajectories = np.load(f"{data_dir}/kinetic/behaviors.npy")
+        traj = trajectories[id] * 25
+        out = model.encode(torch.Tensor(traj).unsqueeze(0).to(device))
+        out = task_embedder(out, torch.Tensor([signal_index]).int().to(device))
+        embeds[id, signal_index, :] = out.detach().cpu().numpy()
+        
+      else:
+        raise Exception(f'Unknown Stimulus Type: {row["type"]}')
+      
+  return embeds
+      
+
+    
