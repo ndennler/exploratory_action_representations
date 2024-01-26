@@ -9,9 +9,37 @@ import matplotlib.pyplot as plt
 from torchvision import transforms
 from torch.utils.data import DataLoader, Dataset
 from PIL import Image
+from tqdm import tqdm
 
 TASK_INDEX_MAPPING = {'idle': 0, 'searching': 1, 'has_information': 2, 'has_item': 3}
 
+
+def preload_data(stimulus_directory, stimulus_mapping, exploratory_action_data):
+
+        print('loading data...')
+
+        stim_ids = set()
+        ids = stimulus_mapping['id'].values
+
+        for i, row in exploratory_action_data.iterrows():
+            for id in row['chosen'].split(','):
+                if int(id) in ids:
+                    stim_ids.add(int(id))
+            for id in row['options'].split(','):
+                if int(id) in ids:
+                    stim_ids.add(int(id))
+        
+        database = {}
+
+        for id in tqdm(stim_ids):
+            fname = stimulus_mapping.query(f'id=={id}')['file'].values[0]
+            path = stimulus_directory + fname[:-4] + '.jpg'
+            with Image.open(path) as im:
+                im = np.array(im) / 255.0
+                im = np.moveaxis(im, -1, 0)
+                database[id] = im
+
+        return database # dict of all the stimulus, preloaded and scaled correctly
 
 class ChoiceDataset(Dataset):
     def __init__(self, df, train=True, transform=None, kind='visual'):
@@ -60,8 +88,10 @@ class ChoiceDataset(Dataset):
 
 
 class RawChoiceDataset(Dataset):
-    def __init__(self, df, train=True, transform=None, kind='visual', data_dir='./data/'):
-        self.is_train = train
+    def __init__(self, df, transform=None, kind='visual', data_dir='./data/'):
+
+        self.data = df
+
         self.transform = transform
         self.kind = kind
         self.indexer_csv_location = data_dir + 'all_data.csv'
@@ -69,16 +99,16 @@ class RawChoiceDataset(Dataset):
         if kind == 'visual':
             self.stimulus_mapping = pd.read_csv(self.indexer_csv_location).query('type=="Video"')
             self.stimulus_directory = data_dir + 'visual/vis/'
+            self.stimulus_array = preload_data(self.stimulus_directory, self.stimulus_mapping, self.data)
 
         elif kind == 'auditory':
             self.stimulus_mapping = pd.read_csv(self.indexer_csv_location).query('type=="Audio"')
             self.stimulus_directory = data_dir + 'auditory/aud/'
+            self.stimulus_array = preload_data(self.stimulus_directory, self.stimulus_mapping, self.data)
 
         elif kind == 'kinesthetic':
             self.stimulus_mapping = pd.read_csv(self.indexer_csv_location).query('type=="Movement"')
-            self.stimulus_array = np.load(data_dir + 'kinetic/behaviors.npy')
-            
-        self.data = df
+            self.stimulus_array = preload_data(self.stimulus_directory, self.stimulus_mapping, self.data)
     
     def get_stimulus_fname(self, index):
         if self.kind == 'visual':
@@ -93,7 +123,6 @@ class RawChoiceDataset(Dataset):
             name = int(index)
     
         return name
-
 
     def get_input_dim(self):
         if self.kind in ['auditory', 'visual']:
@@ -120,46 +149,52 @@ class RawChoiceDataset(Dataset):
             anchor_set = unselected
             negative_set = selected
 
-        anchor, positive = random.sample(anchor_set, 2)
-        negative = random.sample(negative_set, 1)[0]
-        
-        if self.is_train:
-            if self.kind in ['auditory', 'visual']:
-                anchor = np.array(Image.open(self.get_stimulus_fname(int(anchor)))) / 255.0
-                positive = np.array(Image.open(self.get_stimulus_fname(int(positive)))) / 255.0
-                negative = np.array(Image.open(self.get_stimulus_fname(int(negative)))) / 255.0
-                
-                anchor, positive, negative = (np.moveaxis(data, -1, 0) for data in [anchor,positive, negative])
+        anchor_id, positive_id = random.sample(anchor_set, 2)
+        negative_id = random.sample(negative_set, 1)[0]
+    
+        if self.kind in ['auditory', 'visual']:
+            anchor = self.stimulus_array[int(anchor_id)]
+            positive  = self.stimulus_array[int(positive_id)]
+            negative = self.stimulus_array[int(negative_id)] 
 
-            elif self.kind == 'kinesthetic':
-                anchor = self.stimulus_array[self.get_stimulus_fname(int(anchor)), :] * 25
-                positive  = self.stimulus_array[self.get_stimulus_fname(int(positive)), :] * 25
-                negative = self.stimulus_array[self.get_stimulus_fname(int(negative)), :] * 25
+        elif self.kind == 'kinesthetic':
+            anchor = self.stimulus_array[self.get_stimulus_fname(int(anchor_id)), :] * 25
+            positive  = self.stimulus_array[self.get_stimulus_fname(int(positive_id)), :] * 25
+            negative = self.stimulus_array[self.get_stimulus_fname(int(negative_id)), :] * 25
 
-            return self.transform(anchor),self.transform(positive),self.transform(negative)
+        return self.transform(anchor),self.transform(positive),self.transform(negative)
         
 class RawChoiceDatasetwithTaskEmbedding(Dataset):
-    def __init__(self, df, train=True, transform=None, kind='visual', data_dir='./data/'):
-        self.is_train = train
+    def __init__(self, df, transform=None, 
+                 kind='visual', data_dir='./data/', 
+                 pretrained_embed_path = None):
+        
+        self.data = df
+        self.task_to_index_mapping = TASK_INDEX_MAPPING
+        self.pretrained_embed_path = pretrained_embed_path
+
         self.transform = transform
         self.kind = kind
         self.indexer_csv_location = data_dir + 'all_data.csv'
+
+        if pretrained_embed_path is not None:
+            self.pretrained_embed = np.load(pretrained_embed_path)
         
         if kind == 'visual':
             self.stimulus_mapping = pd.read_csv(self.indexer_csv_location).query('type=="Video"')
             self.stimulus_directory = data_dir + 'visual/vis/'
+            self.stimulus_array = preload_data(self.stimulus_directory, self.stimulus_mapping, self.data)
 
         elif kind == 'auditory':
             self.stimulus_mapping = pd.read_csv(self.indexer_csv_location).query('type=="Audio"')
             self.stimulus_directory = data_dir + 'auditory/aud/'
+            self.stimulus_array = preload_data(self.stimulus_directory, self.stimulus_mapping, self.data)
 
         elif kind == 'kinesthetic':
             self.stimulus_mapping = pd.read_csv(self.indexer_csv_location).query('type=="Movement"')
             self.stimulus_array = np.load(data_dir + 'kinetic/behaviors.npy')
-            
-        self.data = df
-        self.task_to_index_mapping = TASK_INDEX_MAPPING
-    
+
+
     def get_stimulus_fname(self, index):
         if self.kind == 'visual':
             name = self.stimulus_mapping.query(f'id=={index}').file.values[0]
@@ -173,7 +208,6 @@ class RawChoiceDatasetwithTaskEmbedding(Dataset):
             name = int(index)
     
         return name
-
 
     def get_input_dim(self):
         if self.kind in ['auditory', 'visual']:
@@ -200,33 +234,40 @@ class RawChoiceDatasetwithTaskEmbedding(Dataset):
             anchor_set = unselected
             negative_set = selected
 
-        anchor, positive = random.sample(anchor_set, 2)
-        negative = random.sample(negative_set, 1)[0]
+        anchor_index, positive_index = random.sample(anchor_set, 2)
+        negative_index = random.sample(negative_set, 1)[0]
         
-        if self.is_train:
-            if self.kind in ['auditory', 'visual']:
-                anchor = np.array(Image.open(self.get_stimulus_fname(int(anchor)))) / 255.0
-                positive = np.array(Image.open(self.get_stimulus_fname(int(positive)))) / 255.0
-                negative = np.array(Image.open(self.get_stimulus_fname(int(negative)))) / 255.0
-                
-                anchor, positive, negative = (np.moveaxis(data, -1, 0) for data in [anchor,positive, negative])
+        signal_index = self.task_to_index_mapping[signal]
 
-            elif self.kind == 'kinesthetic':
-                anchor = self.stimulus_array[self.get_stimulus_fname(int(anchor)), :] * 25
-                positive  = self.stimulus_array[self.get_stimulus_fname(int(positive)), :] * 25
-                negative = self.stimulus_array[self.get_stimulus_fname(int(negative)), :] * 25
+        if self.kind in ['auditory', 'visual']:
+            anchor = self.stimulus_array[int(anchor_index)]
+            positive  = self.stimulus_array[int(positive_index)]
+            negative = self.stimulus_array[int(negative_index)] 
 
-            signal_index = self.task_to_index_mapping[signal]
+        elif self.kind == 'kinesthetic':
+            anchor = self.stimulus_array[self.get_stimulus_fname(int(anchor_index)), :] * 25
+            positive  = self.stimulus_array[self.get_stimulus_fname(int(positive_index)), :] * 25
+            negative = self.stimulus_array[self.get_stimulus_fname(int(negative_index)), :] * 25
 
+        if self.pretrained_embed_path is None:
             return self.transform(anchor),self.transform(positive),self.transform(negative), torch.tensor(signal_index)
+        
+        else:
+            a_embed = self.pretrained_embed[int(anchor),:]
+            p_embed = self.pretrained_embed[int(positive),:]
+            n_embed = self.pretrained_embed[int(negative),:]
+
+            return self.transform(a_embed),self.transform(p_embed),self.transform(n_embed), \
+                    self.transform(anchor),self.transform(positive),self.transform(negative), \
+                    torch.tensor(signal_index), torch.tensor(self.pretrained_embed[int(item),:])
 
 if __name__ == '__main__':
     kind = 'auditory'
-    df = pd.read_csv('../data/plays_and_options.csv')
+    df = pd.read_csv('../../data/plays_and_options.csv')
     df = df.query(f'type == "{kind}"')
 
-    dataset = RawChoiceDataset(df,train=True, kind=kind, transform=torch.Tensor, data_dir='../data/')
-    
+    dataset = RawChoiceDataset(df, kind=kind, transform=torch.Tensor, data_dir='../../data/')
+    # print(len(dataset.preload_data()))
     print(dataset.get_stimulus_fname(0))
     print(dataset.get_input_dim())
 

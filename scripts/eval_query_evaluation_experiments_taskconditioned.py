@@ -89,4 +89,4 @@ if __name__ == '__main__':
                     df = pd.read_csv('../data/task_embedding_results.csv')
                     pd.concat([df, pd.DataFrame(data)]).to_csv('./data/task_embedding_results.csv', index=False)
                 else:
-                    pd.DataFrame(data).to_csv('../data/task_embedding_results.csv', index=False)
+                    pd.DataFrame(data).to_csv('../data/results/task_embedding_results.csv', index=False)
