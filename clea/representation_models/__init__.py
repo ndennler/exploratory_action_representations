@@ -7,7 +7,7 @@ that are useful for downstream tasks in preference learning.
 
 from clea.representation_models.pretrained import PretrainedEncoder, AEPretrainedLearner, VAEPretrainedLearner
 
-from clea.representation_models.auditory import RawAudioEncoder, RawAudioAE, RawAudioVAE
+from clea.representation_models.auditory import RawAudioEncoder, RawAudioAE, RawAudioVAE, Pretrained2RawAudioAE
 from clea.representation_models.visual import RawImageEncoder, RawImageAE, RawImageVAE
 from clea.representation_models.kinetic import RawSequenceEncoder, Seq2Seq, Seq2SeqVAE
 

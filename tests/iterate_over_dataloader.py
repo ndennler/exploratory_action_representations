@@ -10,7 +10,7 @@ import random
 def get_dataloader(batch_size: int, modality: str):
     df = pd.read_csv('../data/plays_and_options.csv') #TODO: make this changeable
     df = df.query(f'type == "{modality}"')
-    dataset = TESTDATASET(df, kind=modality, transform=torch.Tensor, data_dir='../data/')
+    dataset = TESTDATASET(df, kind=modality, transform=torch.Tensor, data_dir='../data/', pretrained_embed_path='../data/auditory/ast_embeds.npy')
     embedding_dataloader = DataLoader(dataset, batch_size=batch_size)
 
     return embedding_dataloader, dataset.get_input_dim()
@@ -37,12 +37,12 @@ class TESTDATASET(Dataset):
         if kind == 'visual':
             self.stimulus_mapping = pd.read_csv(self.indexer_csv_location).query('type=="Video"')
             self.stimulus_directory = data_dir + 'visual/vis/'
-            self.stimulus_array = self.preload_data()
+            self.stimulus_array = self.preload_data(self.stimulus_directory, self.stimulus_mapping, self.data)
 
         elif kind == 'auditory':
             self.stimulus_mapping = pd.read_csv(self.indexer_csv_location).query('type=="Audio"')
             self.stimulus_directory = data_dir + 'auditory/aud/'
-            self.stimulus_array = self.preload_data()
+            self.stimulus_array = self.preload_data(self.stimulus_directory, self.stimulus_mapping, self.data)
 
         elif kind == 'kinesthetic':
             self.stimulus_mapping = pd.read_csv(self.indexer_csv_location).query('type=="Movement"')
@@ -50,7 +50,7 @@ class TESTDATASET(Dataset):
             
         
 
-    def preload_data(stimulus_directory, stimulus_mapping, exploratory_action_data):
+    def preload_data(self, stimulus_directory, stimulus_mapping, exploratory_action_data):
 
         print('loading data...')
 
@@ -138,17 +138,17 @@ class TESTDATASET(Dataset):
             positive  = self.stimulus_array[self.get_stimulus_fname(int(positive_index)), :] * 25
             negative = self.stimulus_array[self.get_stimulus_fname(int(negative_index)), :] * 25
 
-        # if self.pretrained_embed_path is None:
-        return self.transform(anchor),self.transform(positive),self.transform(negative), torch.tensor(signal_index)
+        if self.pretrained_embed_path is None:
+            return self.transform(anchor),self.transform(positive),self.transform(negative), torch.tensor(signal_index)
         
-        # else:
-        #     a_embed = self.pretrained_embed[int(anchor),:]
-        #     p_embed = self.pretrained_embed[int(positive),:]
-        #     n_embed = self.pretrained_embed[int(negative),:]
+        else:
+            a_embed = self.pretrained_embed[int(anchor_index),:]
+            p_embed = self.pretrained_embed[int(positive_index),:]
+            n_embed = self.pretrained_embed[int(negative_index),:]
 
-        #     return self.transform(a_embed),self.transform(p_embed),self.transform(n_embed), \
-        #             self.transform(anchor),self.transform(positive),self.transform(negative), \
-        #             torch.tensor(signal_index), torch.tensor(self.pretrained_embed[int(item),:])
+            return self.transform(a_embed),self.transform(p_embed),self.transform(n_embed), \
+                    self.transform(anchor),self.transform(positive),self.transform(negative), \
+                    torch.tensor(signal_index)
 
 
 
@@ -157,5 +157,5 @@ class TESTDATASET(Dataset):
 dataloader, input = get_dataloader(32, 'auditory')
 
 for _ in tqdm(range(100)):
-    for x,y,z, w in dataloader:
-        print(x.shape)
+    for a,b,c , x,y,z , w in dataloader:
+        print(a.shape)

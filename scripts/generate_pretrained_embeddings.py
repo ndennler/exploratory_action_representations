@@ -85,26 +85,6 @@ def generate_xclip_embeddings():
 
     np.save('../data/visual/xclip_embeds.npy', xclip_embeds)
 
-#encodec features are discrete codes... not sure how to use them
-# def generate_encodec_features():
-#     all_sounds= pd.read_csv('../data/all_data.csv').query('type=="Audio"')
-#     xclip_embeds = np.zeros((all_sounds['id'].max() + 1, 512)) #outputs 512 features
-
-#     # load the model + processor (for pre-processing the audio)
-#     model = EncodecModel.from_pretrained("facebook/encodec_48khz")
-#     processor = AutoProcessor.from_pretrained("facebook/encodec_48khz")
-
-#     # load the audio
-#     wav, sr = torchaudio.load('../data/auditory/aud/' + all_sounds.iloc[0]['file'])
-#     wav = convert_audio(wav, sr, 48_000, 2)
-#     # wav = wav.unsqueeze(0)
-    
-
-#     inputs = processor(raw_audio=wav, sampling_rate=processor.sampling_rate, return_tensors="pt")
-#     # explicitly encode then decode the audio inputs
-#     encoder_outputs = model.encode(inputs["input_values"], inputs["padding_mask"])
-#     print(wav.shape)
-#     print(encoder_outputs.audio_codes.shape)
 
 def generate_AST_features():
     transformers.utils.logging.set_verbosity_error()
@@ -114,9 +94,10 @@ def generate_AST_features():
 
     for i in tqdm(range(len(all_sounds))):
         row = all_sounds.iloc[i]
-        wav, sr = torchaudio.load('../data/auditory/aud/' + all_sounds.iloc[0]['file'])
+
+        wav, sr = torchaudio.load('../data/auditory/aud/' + all_sounds.iloc[i]['file'])
         wav = convert_audio(wav, sr, 16_000, 1)
-        
+
         processor = AutoProcessor.from_pretrained("MIT/ast-finetuned-audioset-10-10-0.4593")
         model = ASTModel.from_pretrained("MIT/ast-finetuned-audioset-10-10-0.4593")
 

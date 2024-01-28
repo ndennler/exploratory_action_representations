@@ -180,3 +180,78 @@ def train_single_epoch_with_task_embedding(
   # print('====> Epoch: {} Average loss: {:.4f}'.format(epoch, train_loss / len(data_loader.dataset)))
   return epoch*len(data_loader.dataset), train_loss / len(data_loader.dataset)
 
+
+def train_single_epoch_with_task_embedding_from_pretrained(
+    embedding_type: str,
+    model: nn.Module,
+    task_embedder: nn.Module,
+    loss_fn: Callable,
+    data_loader: DataLoader,
+    model_optimizer,
+    embed_optimizer,
+    epoch: int,
+    device: str = 'cuda',
+):
+
+  train_loss = 0
+  for batch_idx, (a, p, n, anchor, positive, negative, task_idxs) in enumerate(data_loader):
+
+    model_optimizer.zero_grad()
+    embed_optimizer.zero_grad()
+
+    task_idxs = task_idxs.to(device)
+    anchor = anchor.to(device)
+    positive = positive.to(device)
+    negative = negative.to(device)
+    a,p,n = a.to(device), p.to(device), n.to(device)
+
+    # print(anchor)
+    if embedding_type in ['contrastive', 'autoencoder', 'contrastive+autoencoder']:
+      a_embed = task_embedder(model.encode(a), task_idxs)
+      p_embed = task_embedder(model.encode(p), task_idxs)
+      n_embed = task_embedder(model.encode(n), task_idxs)
+
+    elif embedding_type in ['VAE']:
+      a_embed = model.taskconditioned_forward(a, task_idxs, task_embedder)
+      p_embed = model.taskconditioned_forward(p, task_idxs, task_embedder)
+      n_embed = model.taskconditioned_forward(n, task_idxs, task_embedder)
+    
+
+    # compute loss
+    if embedding_type in ['contrastive']:
+      loss = loss_fn(a_embed, p_embed, n_embed)
+    
+    elif embedding_type in ['autoencoder']:
+      a_embed = model.decode(a_embed)
+      p_embed = model.decode(p_embed)
+      n_embed = model.decode(n_embed)
+
+      loss = loss_fn(a_embed, anchor) + loss_fn(p_embed, positive) + loss_fn(n_embed, negative)
+    
+    elif embedding_type in ['VAE']:
+      #TODO: figure out how to get this to work
+      loss = loss_fn(a_embed, p_embed, n_embed, anchor, positive, negative, beta=.01)
+
+    elif embedding_type in ['contrastive+autoencoder']:
+      loss = nn.TripletMarginLoss()(a_embed, p_embed, n_embed)
+
+      a_embed = model.decode(a_embed)
+      p_embed = model.decode(p_embed)
+      n_embed = model.decode(n_embed)
+
+      loss += loss_fn(a_embed, anchor) + loss_fn(p_embed, positive) + loss_fn(n_embed, negative)
+      
+
+    loss.backward()
+    train_loss += loss.item()
+    model_optimizer.step()
+    embed_optimizer.step()
+
+    # if batch_idx % 50 == 0:
+    #   print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
+    #         epoch, batch_idx * len(anchor), len(data_loader.dataset),
+    #         100. * batch_idx / len(data_loader), loss.item() / len(anchor)))
+
+  # print('====> Epoch: {} Average loss: {:.4f}'.format(epoch, train_loss / len(data_loader.dataset)))
+  return epoch*len(data_loader.dataset), train_loss / len(data_loader.dataset)
+

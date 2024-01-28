@@ -164,6 +164,8 @@ class RawChoiceDataset(Dataset):
 
         return self.transform(anchor),self.transform(positive),self.transform(negative)
         
+
+
 class RawChoiceDatasetwithTaskEmbedding(Dataset):
     def __init__(self, df, transform=None, 
                  kind='visual', data_dir='./data/', 
@@ -210,6 +212,16 @@ class RawChoiceDatasetwithTaskEmbedding(Dataset):
         return name
 
     def get_input_dim(self):
+        if self.pretrained_embed_path is not None:
+            return self.pretrained_embed.shape[1]
+
+        if self.kind in ['auditory', 'visual']:
+            im = Image.open(self.get_stimulus_fname(0))
+            return np.moveaxis(np.array(im),-1,0).shape
+        elif self.kind == 'kinesthetic':
+            return self.stimulus_array[self.get_stimulus_fname(0), :].shape
+    
+    def get_output_dim(self):
         if self.kind in ['auditory', 'visual']:
             im = Image.open(self.get_stimulus_fname(0))
             return np.moveaxis(np.array(im),-1,0).shape
@@ -253,13 +265,13 @@ class RawChoiceDatasetwithTaskEmbedding(Dataset):
             return self.transform(anchor),self.transform(positive),self.transform(negative), torch.tensor(signal_index)
         
         else:
-            a_embed = self.pretrained_embed[int(anchor),:]
-            p_embed = self.pretrained_embed[int(positive),:]
-            n_embed = self.pretrained_embed[int(negative),:]
+            a_embed = self.pretrained_embed[int(anchor_index),:]
+            p_embed = self.pretrained_embed[int(positive_index),:]
+            n_embed = self.pretrained_embed[int(negative_index),:]
 
             return self.transform(a_embed),self.transform(p_embed),self.transform(n_embed), \
                     self.transform(anchor),self.transform(positive),self.transform(negative), \
-                    torch.tensor(signal_index), torch.tensor(self.pretrained_embed[int(item),:])
+                    torch.tensor(signal_index)
 
 if __name__ == '__main__':
     kind = 'auditory'
