@@ -83,8 +83,8 @@ if __name__ == '__main__':
     EMBEDDING_DIM = 64
     
     LR = 1e-4
-    NUM_EPOCHS = 1
-    DEVICE = 'cpu'
+    NUM_EPOCHS = 300
+    DEVICE = 'cuda:0'
 
 
     experiments = [
@@ -94,13 +94,24 @@ if __name__ == '__main__':
         {'modality': 'visual', 'model_type': 'VAE', 'pretrained_embeds_path': '../data/visual/xclip_embeds.npy'},
         {'modality': 'visual', 'model_type': 'random', 'pretrained_embeds_path': '../data/visual/xclip_embeds.npy'},
 
+        {'modality': 'visual', 'model_type': 'contrastive', 'pretrained_embeds_path': '../data/visual/clip_embeds.npy'},
+        {'modality': 'visual', 'model_type': 'autoencoder', 'pretrained_embeds_path': '../data/visual/clip_embeds.npy'},
+        {'modality': 'visual', 'model_type': 'contrastive+autoencoder', 'pretrained_embeds_path': '../data/visual/clip_embeds.npy'},
+        {'modality': 'visual', 'model_type': 'VAE', 'pretrained_embeds_path': '../data/visual/clip_embeds.npy'},
+        {'modality': 'visual', 'model_type': 'random', 'pretrained_embeds_path': '../data/visual/clip_embeds.npy'},
+
 
         {'modality': 'auditory', 'model_type': 'contrastive', 'pretrained_embeds_path': '../data/auditory/ast_embeds.npy'},
         {'modality': 'auditory', 'model_type': 'autoencoder', 'pretrained_embeds_path': '../data/auditory/ast_embeds.npy'},
         {'modality': 'auditory', 'model_type': 'contrastive+autoencoder', 'pretrained_embeds_path': '../data/auditory/ast_embeds.npy'},
         {'modality': 'auditory', 'model_type': 'VAE', 'pretrained_embeds_path': '../data/auditory/ast_embeds.npy'},
+        {'modality': 'auditory', 'model_type': 'random', 'pretrained_embeds_path': '../data/auditory/ast_embeds.npy'},
 
-        #  {'modality': 'auditory', 'model_type': 'contrastive', 'pretrained_embeds_path': '../data/auditory/auditory_pretrained_embeddings.npy'},
+        {'modality': 'auditory', 'model_type': 'contrastive', 'pretrained_embeds_path': '../data/auditory/auditory_pretrained_embeddings.npy'},
+        {'modality': 'auditory', 'model_type': 'autoencoder', 'pretrained_embeds_path': '../data/auditory/auditory_pretrained_embeddings.npy'},
+        {'modality': 'auditory', 'model_type': 'contrastive+autoencoder', 'pretrained_embeds_path': '../data/auditory/auditory_pretrained_embeddings.npy'},
+        {'modality': 'auditory', 'model_type': 'VAE', 'pretrained_embeds_path': '../data/auditory/auditory_pretrained_embeddings.npy'},
+        {'modality': 'auditory', 'model_type': 'random', 'pretrained_embeds_path': '../data/auditory/auditory_pretrained_embeddings.npy'},
 
         {'modality': 'kinesthetic', 'model_type': 'contrastive', 'pretrained_embeds_path': '../data/kinetic/AE_embeds.npy'},
         {'modality': 'kinesthetic', 'model_type': 'autoencoder', 'pretrained_embeds_path': '../data/kinetic/AE_embeds.npy'},
@@ -145,6 +156,6 @@ if __name__ == '__main__':
         torch.save(model, f'../data/trained_models/taskconditioned_{embed_name}_{modality}_{model_type}_{EMBEDDING_DIM}.pth')
         torch.save(task_embedder, f'../data/trained_models/taskconditioned_{embed_name}_{modality}_{model_type}_{EMBEDDING_DIM}_embedder.pth')
 
-        pd.DataFrame(training_results).to_csv(f'../data/trained_models/taskemb_{modality}_{model_type}_{EMBEDDING_DIM}.csv')
+        pd.DataFrame(training_results).to_csv(f'../data/trained_models/taskconditioned_{embed_name}_{modality}_{model_type}_{EMBEDDING_DIM}.csv')
 
 ############################################################################################################

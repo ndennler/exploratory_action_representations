@@ -252,8 +252,8 @@ class Pretrained2RawSeq2Seq(nn.Module):
     #     output_seq = torch.cat(output_seq, dim=1)
     #     return output_seq
     
-    # def encode(self, x):
-    #   return self.encoder(x)
+    def encode(self, x):
+      return self.encoder(x)
     
     def taskconditioned_forward(self, x, task_idxs, task_embedder):
         #encoding phase
