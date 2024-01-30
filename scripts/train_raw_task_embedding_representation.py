@@ -88,14 +88,14 @@ from clea.representation_models.pretrained import TaskEmbedder
 
 if __name__ == '__main__':
 
-    BATCH_SIZE = 64
+    BATCH_SIZE = 128
     EMBEDDING_DIM = 64
     LR = 1e-4
     NUM_EPOCHS = 200
-    DEVICE = 'mps'
+    DEVICE = 'cuda:0'
 
     for modality in ['visual', 'auditory', 'kinesthetic']:
-            for model_type in ['autoencoder', 'contrastive+autoencoder', 'contrastive', 'random']:
+            for model_type in ['autoencoder', 'VAE', 'contrastive+autoencoder', 'contrastive', 'random']:
                         
                 print(f'Training {modality} modality; {model_type} model;')
 

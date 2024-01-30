@@ -12,7 +12,7 @@ from torch.utils.data import DataLoader
 def get_dataloader(batch_size: int, modality: str, signal: str):
     df = pd.read_csv('../data/plays_and_options.csv') #TODO: make this changeable
     df = df.query(f'type == "{modality}" & signal == "{signal}"')
-    dataset = RawChoiceDataset(df, train=True, kind=modality, transform=torch.Tensor, data_dir='../data/')
+    dataset = RawChoiceDataset(df, kind=modality, transform=torch.Tensor, data_dir='../data/')
     embedding_dataloader = DataLoader(dataset, batch_size=batch_size)
 
     return embedding_dataloader, dataset.get_input_dim()
@@ -89,10 +89,10 @@ if __name__ == '__main__':
     BATCH_SIZE = 32
     EMBEDDING_DIM = 64
     LR = 1e-4
-    NUM_EPOCHS = 1
-    DEVICE = 'mps'
+    NUM_EPOCHS = 200
+    DEVICE = 'cuda:0'
 
-    for modality in ['auditory', 'visual', 'kinesthetic']:
+    for modality in ['kinesthetic', 'auditory', 'visual']:
         for signal in ['idle', 'searching', 'has_item', 'has_information']:
             for model_type in ['contrastive', 'random', 'autoencoder', 'VAE', 'contrastive+autoencoder']:
                         

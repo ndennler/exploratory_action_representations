@@ -53,7 +53,7 @@ def train_single_epoch(
 
   train_loss = 0
   for batch_idx, (anchor, positive, negative) in enumerate(data_loader):
-
+    # print(anchor.shape)
     optimizer.zero_grad()
 
     anchor = anchor.to(device)

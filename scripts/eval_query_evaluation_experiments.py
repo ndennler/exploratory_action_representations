@@ -32,14 +32,14 @@ seed=13
 #                                       #
 #########################################
 device = "cuda:0" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
-device = 'cpu'
+device = 'cuda:0'
 # 'visual', 
 for SIGNAL_MODALITY in ['visual', 'auditory', 'kinesthetic']:
     for EMBEDDING_TYPE in ['contrastive+autoencoder', 'contrastive','autoencoder','VAE', 'random']:
         for signal in ['idle', 'searching', 'has_item', 'has_information']:
 
             model_name = f'{"raw_" if FROM_RAW_DATA else ""}{SIGNAL_MODALITY}_{EMBEDDING_TYPE}_{signal}_{embedding_size}.pth'
-            embedding_model = torch.load('./trained_models/' + model_name)
+            embedding_model = torch.load('../trained_models/' + model_name)
             embedding_model.eval()
             embedding_model.to(device)
 

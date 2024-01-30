@@ -119,7 +119,7 @@ class Seq2SeqVAE(nn.Module):
         self.device = device
         self.nz = hidden_size
         
-        self.encoder = PretrainedEncoder(input_size, hidden_size*2, num_layers, dropout, device)
+        self.encoder = RawSequenceEncoder(input_size, 2*hidden_size, num_layers, dropout, device)
         self.decoder = RawSequenceDecoder(input_size, hidden_size, num_layers, dropout, device)
         
     def forward(self, x):
@@ -146,7 +146,7 @@ class Seq2SeqVAE(nn.Module):
         output_seq = torch.cat(output_seq, dim=1)
         return {'q': q, 'rec': output_seq}
     
-    def taskconditioned_forward(self, x, task_idxs):
+    def taskconditioned_forward(self, x, task_idxs, task_embedder):
         # x has shape (batch_size, seq_len, input_size)
         batch_size = x.size(0)
         seq_len = x.size(1)
@@ -156,7 +156,7 @@ class Seq2SeqVAE(nn.Module):
         q = self.encoder(x)
       
         hidden = q[:,:self.nz] + torch.exp(q[:, self.nz:]) * torch.randn([q.shape[0], self.nz], device=self.device)
-        hidden = self.task_embedder(hidden, task_idxs)
+        hidden = task_embedder(hidden, task_idxs)
 
         hidden = hidden.reshape(2*self.num_layers, batch_size, self.hidden_size//(2*self.num_layers))
         # decoding phase

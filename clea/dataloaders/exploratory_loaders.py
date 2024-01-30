@@ -108,7 +108,7 @@ class RawChoiceDataset(Dataset):
 
         elif kind == 'kinesthetic':
             self.stimulus_mapping = pd.read_csv(self.indexer_csv_location).query('type=="Movement"')
-            self.stimulus_array = preload_data(self.stimulus_directory, self.stimulus_mapping, self.data)
+            self.stimulus_array = np.load(data_dir + 'kinetic/behaviors.npy')
     
     def get_stimulus_fname(self, index):
         if self.kind == 'visual':

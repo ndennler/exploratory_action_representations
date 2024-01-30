@@ -14,6 +14,7 @@ TASK_CONDITIONED = True
 
 for MODALITY, TYPE in [ ('kinesthetic', 'Movement')]:
     for EMBEDDING_TYPE in ['autoencoder', 'contrastive+autoencoder']:
+        
         if TASK_CONDITIONED:
             model = torch.load(f'../data/trained_models/taskemb_{MODALITY}_{EMBEDDING_TYPE}_{EMBEDDING_SIZE}.pth', map_location=torch.device(DEVICE))
             task_embedder = torch.load(f'../data/trained_models/taskemb_{MODALITY}_{EMBEDDING_TYPE}_{EMBEDDING_SIZE}_embedder.pth', map_location=torch.device(DEVICE))
