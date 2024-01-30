@@ -302,6 +302,9 @@ class Pretrained2RawSeq2SeqVAE(nn.Module):
         
         self.encoder = PretrainedEncoder(input_size, hidden_size, latent_dim*2, device)
         self.decoder = RawSequenceDecoder(output_size, latent_dim, num_layers, dropout, device)
+
+    def encode(self, x):
+        return self.encoder(x)[:,:self.nz]
         
     def taskconditioned_forward(self, x, task_idxs, task_embedder):
         q = self.encoder(x)

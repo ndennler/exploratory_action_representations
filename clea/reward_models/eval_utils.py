@@ -9,7 +9,7 @@ from PIL import Image
 
 import os
 import torch.nn as nn
-# from clea.dataloaders.query_loaders import QueryDataset, RawQueryDataset, CachedRawQueryDataset, CachedRawQueryTaskEmbeddingDataset
+from clea.dataloaders.query_loaders import QueryDataset, RawQueryDataset, CachedRawQueryDataset, CachedRawQueryTaskEmbeddingDataset
 from torch.utils.data import DataLoader
 from torchmetrics import Accuracy
 from torch import optim
@@ -17,8 +17,8 @@ from torch import optim
 def get_pids_for_training(signal_modality: str, signal: str, train_only: bool = False):
   pids = []
 
-  for pid in pd.read_csv('./data/evaluation/test_queries.csv')['pid'].unique():
-    train_df = pd.read_csv('./data/evaluation/train_queries.csv')
+  for pid in pd.read_csv('../data/evaluation/test_queries.csv')['pid'].unique():
+    train_df = pd.read_csv('../data/evaluation/train_queries.csv')
 
     df = train_df.query(f'type == "{signal_modality}" and pid == {pid} and signal == "{signal}"')
 
@@ -26,7 +26,7 @@ def get_pids_for_training(signal_modality: str, signal: str, train_only: bool = 
       df = train_df.query(f'type == "{signal_modality}" and pid == {pid}')
 
     if len(df) > 0:
-      test_df = pd.read_csv('./data/evaluation/test_queries.csv')
+      test_df = pd.read_csv('../data/evaluation/test_queries.csv')
       df = test_df.query(f'type == "{signal_modality}" and pid == {pid} and signal == "{signal}"')
       
       if signal == "all_signals":
@@ -52,7 +52,7 @@ def get_train_test_dataloaders(
   train_dataloaders = [] 
   test_dataloaders = []
 
-  train_df = pd.read_csv('./data/evaluation/all_queries.csv')
+  train_df = pd.read_csv('../data/evaluation/all_queries.csv')
   df = train_df.query(f'type == "{signal_modality}" and pid == {PID} and signal == "{signal}"')
 
   if signal == "all_signals":
@@ -90,7 +90,7 @@ def get_train_test_dataloaders(
     if raw_data:
       dataset = CachedRawQueryDataset(test_set, train=True, transform=torch.Tensor, name=model_name)
       if signal == 'all_signals':
-        dataset = CachedRawQueryTaskEmbeddingDataset(train_set, train=True, transform=torch.Tensor, name=model_name)
+        dataset = CachedRawQueryTaskEmbeddingDataset(test_set, train=True, transform=torch.Tensor, name=model_name)
     else:
       dataset = QueryDataset(test_set, train=True, kind=signal_modality, transform=torch.Tensor)
     test_dataloader = DataLoader(dataset, batch_size=batch_size)
@@ -201,12 +201,12 @@ def train_single_epoch_task_embeds(
     train_loss += loss.item()
     optimizer.step()
 
-    if batch_idx % 50 == 0:
-      print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
-            epoch, batch_idx * len(option1), len(data_loader.dataset),
-            100. * batch_idx / len(data_loader), loss.item() / len(option1)))
+    # if batch_idx % 50 == 0:
+    #   print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
+    #         epoch, batch_idx * len(option1), len(data_loader.dataset),
+    #         100. * batch_idx / len(data_loader), loss.item() / len(option1)))
 
-  print('====> Epoch: {} Average loss: {:.4f}'.format(epoch, train_loss / len(data_loader.dataset)))
+  # print('====> Epoch: {} Average loss: {:.4f}'.format(epoch, train_loss / len(data_loader.dataset)))
   # print(precomputed_embeds)
   # return precomputed_embeds
   
@@ -226,6 +226,7 @@ def eval_model(
   reward_model.to(device)
 
   eval_values = []
+  tasks = []
   for batch_idx, (option1, option2, option3, choice, _) in enumerate(data_loader):
 
     option1= option1.to(device)
@@ -247,7 +248,10 @@ def eval_model(
     eval_result = eval_fn(rewards, choice)
 
     eval_values.append(eval_result.item())
+    # print(task)
+    # tasks.append(task.item())
 
+    
   return np.nanmean(eval_values)
 
 def calc_reward(
@@ -270,10 +274,10 @@ def calc_reward(
 
 def generate_embeddings(model, model_str, kind, embedding_size, device: str = 'cuda'):
   
-  if os.path.exists(f'./data/embeds/{model_str}.npy'):
+  if os.path.exists(f'../data/embeds/{model_str}.npy'):
     return
   
-  train_df = pd.read_csv('./data/evaluation/all_queries.csv').query(f'type=="{kind}"')
+  train_df = pd.read_csv('../data/evaluation/all_queries.csv').query(f'type=="{kind}"')
   dataset = RawQueryDataset(train_df, train=True, kind=kind, transform=torch.Tensor)
   train_dataloader = DataLoader(dataset, batch_size=32)
 
@@ -299,11 +303,11 @@ def generate_embeddings(model, model_str, kind, embedding_size, device: str = 'c
 
 
 def generate_embeddings_task_conditioned(model, task_embedder, model_str, kind, embedding_size, device: str = 'cuda'):
-  if os.path.exists(f'./data/embeds/{model_str}.npy'):
+  if os.path.exists(f'../data/embeds/{model_str}.npy'):
     print(f'embeddings already exists: {model_str}')
     return
   
-  train_df = pd.read_csv('./data/evaluation/all_queries.csv').query(f'type=="{kind}"')
+  train_df = pd.read_csv('../data/evaluation/all_queries.csv').query(f'type=="{kind}"')
   dataset = RawQueryDataset(train_df, train=True, kind=kind, transform=torch.Tensor, task_embedding=True)
   train_dataloader = DataLoader(dataset, batch_size=32)
 
@@ -349,11 +353,11 @@ def generate_embeddings_task_conditioned(model, task_embedder, model_str, kind, 
       array[int(i), t, :] = em.detach().cpu().numpy()
     
 
-  np.save(f'./data/embeds/{model_str}.npy', array)
+  np.save(f'../data/embeds/{model_str}.npy', array)
 
   # raise Exception('break!')
 
-def generate_all_embeddings_taskconditioned(model, task_embedder, dataframe, device, data_dir='../data'):
+def generate_all_embeddings_taskconditioned(model, task_embedder, dataframe, device, data_dir='../data', pretrained_embeds_array=None):
   model.eval()
   model.to(device)
   task_embedder.eval()
@@ -368,7 +372,14 @@ def generate_all_embeddings_taskconditioned(model, task_embedder, dataframe, dev
     for i, row in tqdm(dataframe.iterrows()):
       id = row['id']
 
-      if row['type'] == 'Video':
+      if pretrained_embeds_array is not None:
+        x = torch.Tensor(pretrained_embeds_array[id]).unsqueeze(0).to(device)
+        out = model.encode(x)
+        out = task_embedder(out, torch.Tensor([signal_index]).int().to(device))
+        embeds[id, signal_index, :] = out.detach().cpu().numpy()
+        
+
+      elif row['type'] == 'Video':
         im= np.array(Image.open(f"{data_dir}/visual/vis/{row['file'].replace('mp4', 'jpg')}")) / 255.0
         im = np.moveaxis(im, -1, 0)
         out = model.encode(torch.Tensor(im).unsqueeze(0).to(device))

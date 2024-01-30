@@ -6,16 +6,53 @@ from clea.reward_models.model_definitions import HCFeatureLearner
 from tqdm import tqdm
 import pandas as pd
 
-MODALITY = 'auditory'
-EMBEDDING_TYPE = 'random'
+EMBEDDING_DIM = 64
 
 results = []
 
-for _ in tqdm(range(20)):
-    for MODALITY in ['visual', 'auditory', 'kinesthetic']:
-        for EMBEDDING_TYPE in ['random', 'autoencoder', 'contrastive+autoencoder']:
-            dataset = HCFeaturesTaskConditionedDataset( f'../data/embeds/{MODALITY}_{EMBEDDING_TYPE}_64_taskconditioned.npy',
-                                                        f'../data/handcrafted_features/{MODALITY}.npy', transform=torch.Tensor)
+
+experiments = [
+    {'modality': 'visual', 'model_type': 'contrastive', 'pretrained_embeds_path': '../data/visual/xclip_embeds.npy'},
+    {'modality': 'visual', 'model_type': 'autoencoder', 'pretrained_embeds_path': '../data/visual/xclip_embeds.npy'},
+    {'modality': 'visual', 'model_type': 'contrastive+autoencoder', 'pretrained_embeds_path': '../data/visual/xclip_embeds.npy'},
+    {'modality': 'visual', 'model_type': 'VAE', 'pretrained_embeds_path': '../data/visual/xclip_embeds.npy'},
+    {'modality': 'visual', 'model_type': 'random', 'pretrained_embeds_path': '../data/visual/xclip_embeds.npy'},
+
+    {'modality': 'visual', 'model_type': 'contrastive', 'pretrained_embeds_path': '../data/visual/clip_embeds.npy'},
+    {'modality': 'visual', 'model_type': 'autoencoder', 'pretrained_embeds_path': '../data/visual/clip_embeds.npy'},
+    {'modality': 'visual', 'model_type': 'contrastive+autoencoder', 'pretrained_embeds_path': '../data/visual/clip_embeds.npy'},
+    {'modality': 'visual', 'model_type': 'VAE', 'pretrained_embeds_path': '../data/visual/clip_embeds.npy'},
+    {'modality': 'visual', 'model_type': 'random', 'pretrained_embeds_path': '../data/visual/clip_embeds.npy'},
+
+    # {'modality': 'auditory', 'model_type': 'contrastive', 'pretrained_embeds_path': '../data/auditory/ast_embeds.npy'},
+    # {'modality': 'auditory', 'model_type': 'autoencoder', 'pretrained_embeds_path': '../data/auditory/ast_embeds.npy'},
+    # {'modality': 'auditory', 'model_type': 'contrastive+autoencoder', 'pretrained_embeds_path': '../data/auditory/ast_embeds.npy'},
+    # {'modality': 'auditory', 'model_type': 'VAE', 'pretrained_embeds_path': '../data/auditory/ast_embeds.npy'},
+    # {'modality': 'auditory', 'model_type': 'random', 'pretrained_embeds_path': '../data/auditory/ast_embeds.npy'},
+    
+    # {'modality': 'auditory', 'model_type': 'contrastive', 'pretrained_embeds_path': '../data/auditory/auditory_pretrained_embeddings.npy'},
+    # {'modality': 'auditory', 'model_type': 'autoencoder', 'pretrained_embeds_path': '../data/auditory/auditory_pretrained_embeddings.npy'},
+    # {'modality': 'auditory', 'model_type': 'contrastive+autoencoder', 'pretrained_embeds_path': '../data/auditory/auditory_pretrained_embeddings.npy'},
+    # {'modality': 'auditory', 'model_type': 'VAE', 'pretrained_embeds_path': '../data/auditory/auditory_pretrained_embeddings.npy'},
+    # {'modality': 'auditory', 'model_type': 'random', 'pretrained_embeds_path': '../data/auditory/auditory_pretrained_embeddings.npy'},
+
+    # {'modality': 'kinesthetic', 'model_type': 'contrastive', 'pretrained_embeds_path': '../data/kinetic/AE_embeds.npy'},
+    # {'modality': 'kinesthetic', 'model_type': 'autoencoder', 'pretrained_embeds_path': '../data/kinetic/AE_embeds.npy'},
+    # {'modality': 'kinesthetic', 'model_type': 'contrastive+autoencoder', 'pretrained_embeds_path': '../data/kinetic/AE_embeds.npy'},
+    # {'modality': 'kinesthetic', 'model_type': 'VAE', 'pretrained_embeds_path': '../data/kinetic/AE_embeds.npy'},
+    # {'modality': 'kinesthetic', 'model_type': 'random', 'pretrained_embeds_path': '../data/kinetic/AE_embeds.npy'},
+]
+
+
+
+for _ in tqdm(range(5)):
+    for e in experiments:
+            modality, model_type, pretrained_embeds_path = e['modality'], e['model_type'], e['pretrained_embeds_path']
+            embed_name = pretrained_embeds_path.split('/')[-1].split('.')[0]
+
+            embeds_path = f'../data/embeds/taskconditioned_{embed_name}_{modality}_{model_type}_{EMBEDDING_DIM}.npy'
+            dataset = HCFeaturesTaskConditionedDataset( embeds_path,
+                                                        f'../data/handcrafted_features/{modality}.npy', transform=torch.Tensor)
 
 
             input_size = dataset[0][0].shape[0]
@@ -28,9 +65,10 @@ for _ in tqdm(range(20)):
 
 
             feature_predictor = HCFeatureLearner(input_size, 1024, output_size, device='cpu')
-            if MODALITY == 'visual':
-                loss_fn = nn.BCEWithLogitsLoss(reduction='sum')
-            elif MODALITY == 'auditory' or MODALITY == 'kinesthetic':
+            if modality == 'visual':
+                # loss_fn = nn.BCEWithLogitsLoss(reduction='sum')
+                loss_fn = nn.MSELoss(reduction='sum')
+            elif modality == 'auditory' or modality == 'kinesthetic':
                 loss_fn = nn.MSELoss(reduction='sum')
 
             optimizer = torch.optim.Adam(feature_predictor.parameters(), lr=1e-3)
@@ -56,8 +94,10 @@ for _ in tqdm(range(20)):
             print(f'Average Loss : {total_loss / len(test_data_loader)}')
 
             results.append({
-                'modality': MODALITY,
-                'embedding_type': EMBEDDING_TYPE,
+                'modality': modality,
+                'embedding_type': model_type,
+                'embedding_dim': EMBEDDING_DIM,
+                'embed_name': embed_name,
                 'loss': total_loss / len(test_data_loader)
             })
 

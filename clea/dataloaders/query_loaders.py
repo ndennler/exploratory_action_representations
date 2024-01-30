@@ -24,11 +24,11 @@ class QueryDataset(Dataset):
         self.kind = kind
         
         if kind == 'visual':
-            self.embeddings = np.load('./data/visual/visual_pretrained_embeddings.npy')
+            self.embeddings = np.load('../data/visual/visual_pretrained_embeddings.npy')
         if kind == 'auditory':
-            self.embeddings = np.load('./data/auditory/auditory_pretrained_embeddings.npy')
+            self.embeddings = np.load('../data/auditory/auditory_pretrained_embeddings.npy')
         if kind == 'kinesthetic':
-            self.embeddings = np.load('./data/kinetic/kinetic_pretrained_embeddings.npy')
+            self.embeddings = np.load('../data/kinetic/kinetic_pretrained_embeddings.npy')
             
         self.data = df
 
@@ -53,7 +53,7 @@ class QueryDataset(Dataset):
 
 
 class RawQueryDataset(Dataset):
-    def __init__(self, df, train=True, transform=None, kind='visual', data_dir='./data/', task_embedding=False):
+    def __init__(self, df, train=True, transform=None, kind='visual', data_dir='../data/', task_embedding=False):
         self.is_train = train
         self.transform = transform
         self.kind = kind
@@ -142,7 +142,7 @@ class CachedRawQueryDataset(Dataset):
         self.is_train = train
         self.transform = transform
         
-        self.embeddings = np.load(f'./data/embeds/{name}.npy')
+        self.embeddings = np.load(f'../data/embeds/{name}.npy')
             
         self.data = df
 
@@ -173,7 +173,7 @@ class CachedRawQueryTaskEmbeddingDataset(Dataset):
         self.is_train = train
         self.transform = transform
         
-        self.embeddings = np.load(f'./data/embeds/{name}.npy')
+        self.embeddings = np.load(f'../data/embeds/{name}.npy')
             
         self.data = df
         self.task_to_index_mapping = TASK_INDEX_MAPPING

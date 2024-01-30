@@ -5,6 +5,47 @@ from collections import Counter
 
 data = pd.read_csv('../data/all_data.csv')
 
+# visual_concepts = {
+#     0 : ['kid', 'baby', 'toy'],
+#     1 : ['baggage', 'hand', 'hands', 'luggage', 'box', 'package', 'parcel', 'bag'],
+#     2 : ['happy', 'smiling', 'smile', 'happiness',  'smiley'],
+#     3 : ['time', 'clock', 'wait', 'hour', 'day'],
+#     4 : ['sleep', 'relax', 'rest', 'eye'],
+#     5 : ['communications', 'message', 'chat', 'speech', 'bubble', 'conversation', 'talk'],
+#     6 : ['idea', 'lightbulb', 'information', 'info', 'brain', 'illumination'],
+#     7 : ['maps', 'map', 'location', 'arrow', 'pin', 'sign', 'transportation', 'vehicle', 'navigation', 'cursor', 'pointer'],
+#     8 : ['business', 'finance', 'card', 'payment', 'finance', 'banking'],
+#     9 : ['magnifying', 'glass', 'search', 'eye', 'radar', 'glasses'],
+#     10 : ['animal' , 'pet', 'animals'],
+# }
+
+# vis_data = data.query('type == "Video"')
+# handcrafted_features = np.zeros((vis_data['id'].max() + 1, 11))
+
+# # for each row, create a label vector of length 100
+# for i, row in vis_data.iterrows():
+#     tags = row['tags'].split(',')
+
+#     label = np.zeros(11)
+
+#     for i in range(11):
+#         value = 0
+#         for tag in visual_concepts[i]:
+#             if tag in tags:
+#                 value += 1
+        
+#         label[i] = value
+
+#     print(label)
+
+
+#     handcrafted_features[row['id']] = label
+
+# print(handcrafted_features)
+
+# np.save('../data/handcrafted_features/visual.npy', handcrafted_features)
+
+
 '''
 Handcrafted features for video come from the tags associated with each video.
 To do this we will get the top 99 tags and use the 100th tag as the "other" tag.
