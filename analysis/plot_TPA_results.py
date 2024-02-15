@@ -7,7 +7,11 @@ import numpy as np
 sns.set_theme(style="ticks", font_scale=1.3)
 plt.figure(figsize=(5,6))
 
-df = pd.read_csv('../data/results/taskembedding_TPA_results.csv')
+# df = pd.read_csv('../data/results/taskembedding_TPA_results.csv')
+# ax = sns.barplot(data=df, x='embed_name', y='metric', hue='embedding_type')
+
+df = pd.read_csv('../data/results/TPA_results.csv')
+ax = sns.barplot(data=df, x='modality', y='metric', hue='embedding_type')
 
 # means = df.groupby(['modality', 'embedding_type', 'seed'])['metric'].mean()
 # means = means.reset_index()
@@ -34,7 +38,6 @@ df = pd.read_csv('../data/results/taskembedding_TPA_results.csv')
 
 print(df)
 
-ax = sns.barplot(data=df, x='embed_name', y='metric', hue='embedding_type')
 # sns.lineplot(data=df, x='embedding_size', y='metric', hue='embedding_type', errorbar='se')
 plt.ylabel('Choice Prediction Accuracy')
 plt.xlabel('Modality')

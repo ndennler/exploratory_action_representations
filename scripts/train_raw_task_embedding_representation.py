@@ -126,9 +126,9 @@ if __name__ == '__main__':
                         tqdm.write(f'Epoch {i} loss: {avg_loss}')
 
                 #4. save model and data
-                torch.save(model, f'../data/trained_models/taskemb_{modality}_{model_type}_{EMBEDDING_DIM}.pth')
-                torch.save(task_embedder, f'../data/trained_models/taskemb_{modality}_{model_type}_{EMBEDDING_DIM}_embedder.pth')
+                torch.save(model, f'../data/trained_models/{modality}&taskconditioned&raw&{model_type}&all_signals&{EMBEDDING_DIM}.pth')
+                torch.save(task_embedder, f'../data/trained_models/{modality}&taskconditioned&raw&{model_type}&all_signals&{EMBEDDING_DIM}_embedder.pth')
 
-                pd.DataFrame(training_results).to_csv(f'../data/trained_models/taskemb_{modality}_{model_type}_{EMBEDDING_DIM}.csv')
+                pd.DataFrame(training_results).to_csv(f'../data/trained_models/{modality}&taskconditioned&raw&{model_type}&all_signals&{EMBEDDING_DIM}.csv')
 
 ############################################################################################################

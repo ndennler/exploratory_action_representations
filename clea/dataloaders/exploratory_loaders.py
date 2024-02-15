@@ -42,17 +42,12 @@ def preload_data(stimulus_directory, stimulus_mapping, exploratory_action_data):
         return database # dict of all the stimulus, preloaded and scaled correctly
 
 class ChoiceDataset(Dataset):
-    def __init__(self, df, train=True, transform=None, kind='visual'):
+    def __init__(self, df, embed_path, train=True, transform=None, kind='visual'):
         self.is_train = train
         self.transform = transform
         self.kind = kind
         
-        if kind == 'visual':
-            self.embeddings = np.load('../data/visual/visual_pretrained_embeddings.npy')
-        elif kind == 'auditory':
-            self.embeddings = np.load('../data/auditory/auditory_pretrained_embeddings.npy')
-        elif kind == 'kinesthetic':
-            self.embeddings = np.load('../data/kinetic/kinetic_pretrained_embeddings.npy')
+        self.embeddings = np.load(embed_path)
             
         self.data = df
         
@@ -66,7 +61,6 @@ class ChoiceDataset(Dataset):
 
         d = self.data.iloc[item]
         selected, unselected = d['chosen'].split(','), d['options'].split(',')
-
 
         anchor_set = selected
         negative_set = unselected

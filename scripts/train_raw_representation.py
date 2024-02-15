@@ -120,7 +120,7 @@ if __name__ == '__main__':
                         tqdm.write(f'Epoch {i} loss: {avg_loss}')
 
                 #4. save model and data
-                torch.save(model, f'../data/trained_models/raw_{modality}_{model_type}_{signal}_{EMBEDDING_DIM}.pth')
-                pd.DataFrame(training_results).to_csv(f'../data/trained_models/raw_{modality}_{model_type}_{signal}_{EMBEDDING_DIM}.csv')
+                torch.save(model, f'../data/trained_models/{modality}&independent&raw&{model_type}&{signal}&{EMBEDDING_DIM}.pth')
+                pd.DataFrame(training_results).to_csv(f'../data/trained_models/{modality}&independent&raw&{model_type}&{signal}&{EMBEDDING_DIM}.csv')
 
 ############################################################################################################
