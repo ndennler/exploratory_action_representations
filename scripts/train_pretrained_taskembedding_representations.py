@@ -84,7 +84,7 @@ if __name__ == '__main__':
 
     LR = 1e-4
     NUM_EPOCHS = 1
-    DEVICE = 'mps'
+    DEVICE = 'cpu'
 
 
     experiments = [
