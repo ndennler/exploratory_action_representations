@@ -89,13 +89,8 @@ if __name__ == '__main__':
     BATCH_SIZE = 128
     EMBEDDING_DIM = 64
     LR = 1e-4
-<<<<<<< HEAD
     NUM_EPOCHS = 300
     DEVICE = 'cuda:0'
-=======
-    NUM_EPOCHS = 2
-    DEVICE = 'cpu'
->>>>>>> 8d751aa5a17e372f075eac812a818bebc33310e4
 
     for modality in ['kinesthetic', 'auditory', 'visual']:
         for signal in ['idle', 'searching', 'has_item', 'has_information']:

@@ -91,13 +91,8 @@ if __name__ == '__main__':
     BATCH_SIZE = 128
     EMBEDDING_DIM = 64
     LR = 1e-4
-<<<<<<< HEAD
     NUM_EPOCHS = 300
     DEVICE = 'cuda:0'
-=======
-    NUM_EPOCHS = 2
-    DEVICE = 'cpu'
->>>>>>> 8d751aa5a17e372f075eac812a818bebc33310e4
 
     for modality in ['visual', 'auditory', 'kinesthetic']:
             for model_type in ['autoencoder', 'VAE', 'contrastive+autoencoder', 'contrastive', 'random']:

@@ -19,7 +19,7 @@ def generate_taskconditioned_embeddings(model_path, em_path=None):
     model.to(DEVICE)
     model.device = DEVICE
 
-    if modality== 'kinesthetic': #clean this up with a model.move_to_device
+    if modality== 'kinesthetic' and hasattr(model, 'encoder'): #clean this up with a model.move_to_device
         model.encoder.device = DEVICE
     task_embedder.eval()
     task_embedder.to(DEVICE)
