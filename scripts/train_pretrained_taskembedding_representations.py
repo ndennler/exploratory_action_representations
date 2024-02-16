@@ -83,8 +83,13 @@ if __name__ == '__main__':
     EMBEDDING_DIM = 64
 
     LR = 1e-4
+<<<<<<< HEAD
     NUM_EPOCHS = 300
     DEVICE = 'cuda:0'
+=======
+    NUM_EPOCHS = 1
+    DEVICE = 'cpu'
+>>>>>>> 8d751aa5a17e372f075eac812a818bebc33310e4
 
 
     experiments = [

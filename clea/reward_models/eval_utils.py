@@ -357,38 +357,6 @@ def generate_embeddings_task_conditioned(model, task_embedder, model_str, kind, 
 
   # raise Exception('break!')
 
-def generate_all_raw_embeddings(model, dataframe, device, embedding_dim, data_dir='../data'):
-  model.eval()
-  model.to(device)
-
-  out_size = embedding_dim
-
-  embeds = np.zeros((dataframe['id'].max() + 1, out_size))
-
-  for i, row in tqdm(dataframe.iterrows()):
-    id = row['id']
-    if row['type'] == 'Video':
-      im= np.array(Image.open(f"{data_dir}/visual/vis/{row['file'].replace('mp4', 'jpg')}")) / 255.0
-      im = np.moveaxis(im, -1, 0)
-      out = model.encode(torch.Tensor(im).unsqueeze(0).to(device))
-      embeds[id, :] = out.detach().cpu().numpy()
-
-    elif row['type'] == 'Audio':
-      im= np.array(Image.open(f"{data_dir}/auditory/aud/{row['file'].replace('wav', 'jpg')}")) / 255.0
-      im = np.moveaxis(im, -1, 0)
-      out = model.encode(torch.Tensor(im).unsqueeze(0).to(device))
-      embeds[id,  :] = out.detach().cpu().numpy()
-
-    elif row['type'] == 'Movement':
-      trajectories = np.load(f"{data_dir}/kinetic/behaviors.npy")
-      traj = trajectories[id] * 25
-      out = model.encode(torch.Tensor(traj).unsqueeze(0).to(device))
-      embeds[id, :] = out.detach().cpu().numpy()
-      
-    else:
-      raise Exception(f'Unknown Stimulus Type: {row["type"]}')
-    
-  return embeds
 
 
 
@@ -443,3 +411,48 @@ def generate_all_embeddings_taskconditioned(model, task_embedder, dataframe, dev
       
 
     
+def generate_all_embeddings_independent(model, dataframe, embedding_size, signal, device, data_dir='../data', pretrained_embeds_array=None, embed_storage_path=None):
+  model.eval()
+  model.to(device)
+  TASK_INDEX_MAPPING = {'idle': 0, 'searching': 1, 'has_information': 2, 'has_item': 3}
+
+  out_size = embedding_size
+  if embed_storage_path is not None:
+    embeds = np.load(embed_storage_path)
+  else:
+    embeds = np.zeros((dataframe['id'].max() + 1, 4, out_size))
+
+  print(embeds.shape)
+
+  for i, row in tqdm(dataframe.iterrows()):
+    id = row['id']
+    signal_index = TASK_INDEX_MAPPING[signal]
+
+    if pretrained_embeds_array is not None:
+      x = torch.Tensor(pretrained_embeds_array[id]).unsqueeze(0).to(device)
+      out = model.encode(x)
+      embeds[id, signal_index, :] = out.detach().cpu().numpy()
+      
+
+    elif row['type'] == 'Video':
+      im= np.array(Image.open(f"{data_dir}/visual/vis/{row['file'].replace('mp4', 'jpg')}")) / 255.0
+      im = np.moveaxis(im, -1, 0)
+      out = model.encode(torch.Tensor(im).unsqueeze(0).to(device))
+      embeds[id, signal_index, :] = out.detach().cpu().numpy()
+
+    elif row['type'] == 'Audio':
+      im= np.array(Image.open(f"{data_dir}/auditory/aud/{row['file'].replace('wav', 'jpg')}")) / 255.0
+      im = np.moveaxis(im, -1, 0)
+      out = model.encode(torch.Tensor(im).unsqueeze(0).to(device))
+      embeds[id, signal_index, :] = out.detach().cpu().numpy()
+
+    elif row['type'] == 'Movement':
+      trajectories = np.load(f"{data_dir}/kinetic/behaviors.npy")
+      traj = trajectories[id] * 25
+      out = model.encode(torch.Tensor(traj).unsqueeze(0).to(device))
+      embeds[id, signal_index, :] = out.detach().cpu().numpy()
+      
+    else:
+      raise Exception(f'Unknown Stimulus Type: {row["type"]}')
+    
+  return embeds
