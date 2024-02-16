@@ -8,7 +8,6 @@ EMBEDDING_DIM = 64
 TASK_CONDITIONED = True
 DEVICE = 'cpu'
 
-
 def generate_taskconditioned_embeddings(model_path, em_path=None):
     modality, task_dependency, pretrained, embedding_type, signal, size = model_path[:-4].split('&')
 
