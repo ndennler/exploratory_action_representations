@@ -79,12 +79,12 @@ if __name__ == '__main__':
 
     BATCH_SIZE = 128
 
-    HIDDEN_DIM = 256
+    HIDDEN_DIM = 512
     EMBEDDING_DIM = 64
 
     LR = 1e-4
-    NUM_EPOCHS = 1
-    DEVICE = 'mps'
+    NUM_EPOCHS = 300
+    DEVICE = 'cuda:0'
 
 
     experiments = [

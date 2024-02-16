@@ -91,7 +91,7 @@ if __name__ == '__main__':
     BATCH_SIZE = 128
     EMBEDDING_DIM = 64
     LR = 1e-4
-    NUM_EPOCHS = 200
+    NUM_EPOCHS = 300
     DEVICE = 'cuda:0'
 
     for modality in ['visual', 'auditory', 'kinesthetic']:

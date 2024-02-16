@@ -55,11 +55,11 @@ from clea.representation_models.train_model_utils import train_single_epoch
 
 if __name__ == '__main__':
 
-    BATCH_SIZE = 32
+    BATCH_SIZE = 128
     EMBEDDING_DIM = 64
     LR = 1e-4
-    NUM_EPOCHS = 3
-    DEVICE = 'cpu'
+    NUM_EPOCHS = 300
+    DEVICE = 'cuda:0'
 
 
     experiments = [
