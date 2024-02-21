@@ -2,7 +2,8 @@ import pandas as pd
 from matplotlib import pyplot as plt
 import seaborn as sns
 
-data = pd.read_csv('../data/results/HC_feature_predictor_results.csv')
+data = pd.read_csv('../data/results/FPE_results.csv')
+data = data.query('pretraining != "raw" and conditioning == "independent"')
 data.sort_values(by=['modality'], inplace=True)
 print(data.query('embedding_type == "random"').groupby(['modality'])['loss'].mean().values)
 
@@ -13,7 +14,7 @@ means = data.query('embedding_type == "random"').groupby(['modality'])['loss'].m
 # data.loc[data['modality'] == 'visual', 'scaled_loss'] = data[data['modality'] == 'visual']['loss'] / means[2]
 
 print(data)
-sns.barplot(x='embed_name', y='loss', hue='embedding_type', data=data)
+sns.barplot(x='pretraining', y='loss', hue='embedding_type', data=data)
 plt.ylabel('Loss (Normalized)')
 plt.xlabel('Modality')
 legend = plt.legend(title='Embedding Type')

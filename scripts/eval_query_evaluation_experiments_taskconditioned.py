@@ -98,7 +98,6 @@ if __name__ == '__main__':
                         loss_fn= nn.CrossEntropyLoss(),
                         data_loader=train_data,
                         optimizer=optim.Adam(reward_model.parameters()),
-                        epoch=epoch,
                         device=DEVICE,
                     )
                 

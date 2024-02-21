@@ -9,6 +9,7 @@ class HCFeaturesDataset(Dataset):
         self.transform = transform
         self.embeddings = np.load(embeddings_path)
         self.handcrafted_features = np.load(handcrafted_features_path)
+        
 
     def __len__(self):
         return len(self.embeddings)
@@ -16,17 +17,23 @@ class HCFeaturesDataset(Dataset):
     def __getitem__(self, item):
         return self.transform(self.embeddings[item]), self.handcrafted_features[item]
     
+
+
 class HCFeaturesTaskConditionedDataset(Dataset):
-    def __init__(self,  embeddings_path, handcrafted_features_path, transform=None):
+    def __init__(self,  embeddings_path, handcrafted_features_path, transform=None, task_idx=None):
         self.transform = transform
         self.embeddings = np.load(embeddings_path)
         self.handcrafted_features = np.load(handcrafted_features_path)
+        self.task_idx = task_idx
 
     def __len__(self):
         return len(self.embeddings)
     
     def __getitem__(self, item):
-        task_idx = np.random.randint(0, 4)
+        if self.task_idx is None:
+            task_idx = np.random.randint(0, 4)
+        else:
+            task_idx = self.task_idx
         return self.transform(self.embeddings[item, task_idx]), self.handcrafted_features[item]
     
 

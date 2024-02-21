@@ -38,6 +38,65 @@ def get_pids_for_training(signal_modality: str, signal: str, train_only: bool = 
   return pids
 
 
+def get_dataloaders(
+    PID: int,
+    modality: str,
+    conditioning: str,
+    embedding_path:str,
+):
+  loo  = LeaveOneOut()
+  train_dataloaders = []
+  test_dataloaders = []
+
+  query_df = pd.read_csv('../data/evaluation/all_queries.csv')
+
+  query = f'type == "{modality}" and pid == {PID}'
+
+  if conditioning == 'independent':
+    for sig in ['idle', 'searching', 'has_information', 'has_item']:
+
+      df = query_df.query(f'{query} and signal == "{sig}"')
+
+      if len(df) > 1: # add all queries of the signal if there are enough to do loo with
+        for train_index, test_index in loo.split(df):
+          train_set = df.iloc[train_index]
+          test_set = df.iloc[test_index]
+
+          dataset = CachedRawQueryTaskEmbeddingDataset(train_set, train=True, transform=torch.Tensor, name=embedding_path)
+          train_dataloader = DataLoader(dataset, batch_size=32)
+          train_dataloaders.append(train_dataloader)
+
+          dataset = CachedRawQueryTaskEmbeddingDataset(test_set, train=True, transform=torch.Tensor, name=embedding_path)
+          test_dataloader = DataLoader(dataset, batch_size=32)
+          test_dataloaders.append(test_dataloader)
+        
+
+  elif conditioning == 'taskconditioned':
+    df = query_df.query(query)
+    if len(df) <= 1:
+      return [], []
+
+    for train_index, test_index in loo.split(df):
+      train_set = df.iloc[train_index]
+      test_set = df.iloc[test_index]
+
+      dataset = CachedRawQueryTaskEmbeddingDataset(train_set, train=True, transform=torch.Tensor, name=embedding_path)
+      train_dataloader = DataLoader(dataset, batch_size=32)
+      train_dataloaders.append(train_dataloader)
+
+      dataset = CachedRawQueryTaskEmbeddingDataset(test_set, train=True, transform=torch.Tensor, name=embedding_path)
+      test_dataloader = DataLoader(dataset, batch_size=32)
+      test_dataloaders.append(test_dataloader)
+
+  return train_dataloaders, test_dataloaders
+    
+
+  
+
+
+
+
+
 def get_train_test_dataloaders(
     PID: int,
     signal_modality: str,
@@ -150,6 +209,80 @@ def train_single_epoch(
   # print(precomputed_embeds)
   # return precomputed_embeds
   
+
+def train_reward_model_one_epoch(
+    reward_model: nn.Module,
+    loss_fn: Callable,
+    data_loader: DataLoader,
+    optimizer,
+    device: str = 'cuda'):
+  
+  reward_model.train()
+  reward_model.to(device)
+  train_loss = 0
+
+  for batch_idx, (option1, option2, option3, choice, option_idxs) in enumerate(data_loader):
+      
+      option1= option1.to(device)
+      option2 = option2.to(device)
+      option3 = option3.to(device)
+      choice = choice.to(device)
+  
+      optimizer.zero_grad()
+  
+      r1 = reward_model(option1)
+      r2 = reward_model(option2)
+      r3 = reward_model(option3)
+  
+      r4 = torch.zeros(r1.shape).to(device)
+      rewards = torch.cat((r1,r2,r3,r4), 1)
+      # compute loss
+      loss = loss_fn(rewards, choice)
+  
+      loss.backward()
+      train_loss += loss.item()
+      optimizer.step()
+
+  return train_loss
+
+def evaluate_reward_model(
+    reward_model: nn.Module,
+    eval_fn: Callable,
+    data_loader: DataLoader,
+    device: str = 'cuda'):
+  
+  # set model to evaluate mode
+  reward_model.eval()
+  reward_model.to(device)
+
+  eval_values = []
+  tasks = []
+  for batch_idx, (option1, option2, option3, choice, _) in enumerate(data_loader):
+
+    option1= option1.to(device)
+    option2 = option2.to(device)
+    option3 = option3.to(device)
+    choice = choice.to(device)
+
+    r1 = reward_model(option1)
+    r2 = reward_model(option2)
+    r3 = reward_model(option3)
+
+    r4 = torch.zeros(r1.shape).to(device)
+    rewards = torch.cat((r1,r2,r3,r4), 1).to(device)
+    # compute loss
+    eval_result = eval_fn(rewards, choice)
+
+    eval_values.append(eval_result.item())
+
+    
+  return np.nanmean(eval_values)
+    
+  
+
+
+
+
 
 def train_single_epoch_task_embeds(
     embedding_model: nn.Module,

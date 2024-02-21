@@ -11,7 +11,9 @@ plt.figure(figsize=(5,6))
 # ax = sns.barplot(data=df, x='embed_name', y='metric', hue='embedding_type')
 
 df = pd.read_csv('../data/results/TPA_results.csv')
-ax = sns.barplot(data=df, x='modality', y='metric', hue='embedding_type')
+df = df.query('pretraining != "raw" and conditioning == "independent"')
+
+ax = sns.barplot(data=df, x='pretraining', y='metric', hue='embedding_type')
 
 # means = df.groupby(['modality', 'embedding_type', 'seed'])['metric'].mean()
 # means = means.reset_index()
