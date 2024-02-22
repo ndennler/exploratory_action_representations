@@ -89,9 +89,9 @@ from clea.representation_models.pretrained import TaskEmbedder
 if __name__ == '__main__':
 
     BATCH_SIZE = 128
-    EMBEDDING_DIM = 64
+    EMBEDDING_DIM = 128
     LR = 1e-4
-    NUM_EPOCHS = 200
+    NUM_EPOCHS = 300
     DEVICE = 'cuda:0'
 
     for modality in ['visual', 'auditory', 'kinesthetic']:
@@ -126,9 +126,9 @@ if __name__ == '__main__':
                         tqdm.write(f'Epoch {i} loss: {avg_loss}')
 
                 #4. save model and data
-                torch.save(model, f'../data/trained_models/taskemb_{modality}_{model_type}_{EMBEDDING_DIM}.pth')
-                torch.save(task_embedder, f'../data/trained_models/taskemb_{modality}_{model_type}_{EMBEDDING_DIM}_embedder.pth')
+                torch.save(model, f'../data/trained_models/{modality}&taskconditioned&raw&{model_type}&all_signals&{EMBEDDING_DIM}.pth')
+                torch.save(task_embedder, f'../data/trained_models/{modality}&taskconditioned&raw&{model_type}&all_signals&{EMBEDDING_DIM}_embedder.pth')
 
-                pd.DataFrame(training_results).to_csv(f'../data/trained_models/taskemb_{modality}_{model_type}_{EMBEDDING_DIM}.csv')
+                pd.DataFrame(training_results).to_csv(f'../data/trained_models/{modality}&taskconditioned&raw&{model_type}&all_signals&{EMBEDDING_DIM}.csv')
 
 ############################################################################################################

@@ -86,10 +86,10 @@ from clea.representation_models.train_model_utils import train_single_epoch
 
 if __name__ == '__main__':
 
-    BATCH_SIZE = 32
-    EMBEDDING_DIM = 64
+    BATCH_SIZE = 128
+    EMBEDDING_DIM = 128
     LR = 1e-4
-    NUM_EPOCHS = 200
+    NUM_EPOCHS = 300
     DEVICE = 'cuda:0'
 
     for modality in ['kinesthetic', 'auditory', 'visual']:
@@ -120,7 +120,7 @@ if __name__ == '__main__':
                         tqdm.write(f'Epoch {i} loss: {avg_loss}')
 
                 #4. save model and data
-                torch.save(model, f'../data/trained_models/raw_{modality}_{model_type}_{signal}_{EMBEDDING_DIM}.pth')
-                pd.DataFrame(training_results).to_csv(f'../data/trained_models/raw_{modality}_{model_type}_{signal}_{EMBEDDING_DIM}.csv')
+                torch.save(model, f'../data/trained_models/{modality}&independent&raw&{model_type}&{signal}&{EMBEDDING_DIM}.pth')
+                pd.DataFrame(training_results).to_csv(f'../data/trained_models/{modality}&independent&raw&{model_type}&{signal}&{EMBEDDING_DIM}.csv')
 
 ############################################################################################################

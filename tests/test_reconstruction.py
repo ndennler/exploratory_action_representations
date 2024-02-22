@@ -11,25 +11,26 @@ from clea.dataloaders.exploratory_loaders import TASK_INDEX_MAPPING
 def get_dataloader(batch_size: int, modality: str):
     df = pd.read_csv('../data/plays_and_options.csv') #TODO: make this changeable
     df = df.query(f'type == "{modality}"')
-    dataset = RawChoiceDatasetwithTaskEmbedding(df, train=True, kind=modality, transform=torch.Tensor, data_dir='../data/')
+    dataset = RawChoiceDatasetwithTaskEmbedding(df, kind=modality, transform=torch.Tensor, data_dir='../data/')
     embedding_dataloader = MultiEpochsDataLoader(dataset, batch_size=batch_size, num_workers=4, persistent_workers=True, shuffle=True)
 
     return embedding_dataloader, dataset.get_input_dim()
 
 if __name__ == "__main__":
     N_EXAMPLES = 6
-    device = 'mps'
+    device = 'cpu'
     modality = 'auditory'
 
     data, loss = get_dataloader(N_EXAMPLES, modality)
 
-    model_name = f'taskemb_{modality}_autoencoder_64'
-    model = torch.load('../data/trained_models/' + model_name + '.pth')
+    model_name = f'taskconditioned_ast_embeds_auditory_VAE_64'
+    model = torch.load('../data/final_models/' + model_name + '.pth', map_location=torch.device(device))
+
     model.eval()
     model.to(device)
 
-    if 'taskemb' in model_name:
-        task_embedder = torch.load('../data/trained_models/' + model_name + '_embedder.pth')
+    if 'task' in model_name:
+        task_embedder = torch.load('../data/final_models/' + model_name + '_embedder.pth', map_location=torch.device(device))
         task_embedder.eval()
         task_embedder.to(device)
 

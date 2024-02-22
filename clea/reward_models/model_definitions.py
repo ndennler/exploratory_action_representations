@@ -15,10 +15,13 @@ class RewardLearner(nn.Module):
     self.encoder = nn.Sequential(
         nn.Flatten(),
         nn.Linear(input_dim, hidden_dim),
-        nn.ReLU(),
-        nn.Linear(hidden_dim, hidden_dim),
-        nn.ReLU(),
+        nn.Sigmoid(),
+        # nn.ReLU(),
+        # nn.Linear(hidden_dim, hidden_dim),
+        # nn.ReLU(),
         nn.Linear(hidden_dim, 1),
+      
+        # nn.Linear(input_dim, 1),
     )
 
   def forward(self, x):
@@ -40,10 +43,12 @@ class HCFeatureLearner(nn.Module):
     self.encoder = nn.Sequential(
         nn.Flatten(),
         nn.Linear(input_dim, hidden_dim),
-        nn.ReLU(),
+        nn.Sigmoid(),
+        # nn.ReLU(),
         nn.Linear(hidden_dim, hidden_dim),
         nn.ReLU(),
         nn.Linear(hidden_dim, output_dim),
+        # nn.Linear(input_dim, output_dim)
     )
 
   def forward(self, x):

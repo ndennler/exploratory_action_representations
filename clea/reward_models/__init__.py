@@ -1,4 +1,5 @@
-''' Reward Models
+''' 
+Reward Models
 
 The functions in this module are used to train reward models to 
 evaluate the quality of the representations learned by the representation models.
