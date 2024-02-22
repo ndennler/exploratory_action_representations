@@ -22,12 +22,12 @@ if __name__ == '__main__':
     # get filtered version of each of the data
     # change
     # use Video, Audio, or Movement
-    all_data_filtered = all_data_csv[all_data_csv['type'] == type][:-3]
+    all_data_filtered = all_data_csv[all_data_csv['type'] == type][:]
     print(all_data_filtered['id'].max())
 
     #change
     embeddings = np.load(f'../data/embeds/{file_name}')
-    flattened_embeddings = embeddings[:,TASK_INDEX_MAPPING[signal],:-3]
+    flattened_embeddings = embeddings[:,TASK_INDEX_MAPPING[signal],:]
     print(embeddings.shape)
 
     # get final signal embeddings
