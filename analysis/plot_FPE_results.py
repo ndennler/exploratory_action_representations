@@ -3,7 +3,7 @@ from matplotlib import pyplot as plt
 import seaborn as sns
 
 data = pd.read_csv('../data/results/FPE_results.csv')
-data = data.query('pretraining != "raw" and conditioning == "independent"')
+data = data.query('pretraining != "raw" and conditioning == "taskconditioned" and embedding_size == 128')
 data.sort_values(by=['modality'], inplace=True)
 print(data.query('embedding_type == "random"').groupby(['modality'])['loss'].mean().values)
 

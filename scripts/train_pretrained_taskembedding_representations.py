@@ -56,6 +56,17 @@ def get_model_and_loss_fn(model_type: str,
             return Pretrained2RawImageAE(input_dim, output_dim, hidden_dim, latent_dim, device=device), nn.MSELoss()
         elif modality == 'kinesthetic':
             return Pretrained2RawSeq2Seq(input_dim, output_size = 3, hidden_size=hidden_dim, latent_dim=latent_dim, num_layers=2, device=device), nn.MSELoss()
+        
+    elif model_type == 'contrastive+VAE':
+        if modality == 'auditory':
+            model = Pretrained2RawAudioVAE(input_dim, output_dim, hidden_dim, latent_dim, device=device)
+            return model, model.vae_loss
+        elif modality == 'visual':
+            model = Pretrained2RawImageVAE(input_dim, output_dim, hidden_dim, latent_dim, device=device)
+            return model, model.vae_loss
+        elif modality == 'kinesthetic':
+            model = Pretrained2RawSeq2SeqVAE(input_dim, output_size = 3, hidden_size=hidden_dim, latent_dim=latent_dim, num_layers=2, device=device)
+            return model, model.vae_loss
 
     elif model_type == 'VAE':
         if modality == 'auditory':
@@ -91,12 +102,14 @@ if __name__ == '__main__':
         {'modality': 'visual', 'model_type': 'contrastive', 'pretrained_embeds_path': '../data/visual/xclip_embeds.npy'},
         {'modality': 'visual', 'model_type': 'autoencoder', 'pretrained_embeds_path': '../data/visual/xclip_embeds.npy'},
         {'modality': 'visual', 'model_type': 'contrastive+autoencoder', 'pretrained_embeds_path': '../data/visual/xclip_embeds.npy'},
+        {'modality': 'visual', 'model_type': 'contrastive+VAE', 'pretrained_embeds_path': '../data/visual/xclip_embeds.npy'},
         {'modality': 'visual', 'model_type': 'VAE', 'pretrained_embeds_path': '../data/visual/xclip_embeds.npy'},
         {'modality': 'visual', 'model_type': 'random', 'pretrained_embeds_path': '../data/visual/xclip_embeds.npy'},
 
         {'modality': 'visual', 'model_type': 'contrastive', 'pretrained_embeds_path': '../data/visual/clip_embeds.npy'},
         {'modality': 'visual', 'model_type': 'autoencoder', 'pretrained_embeds_path': '../data/visual/clip_embeds.npy'},
         {'modality': 'visual', 'model_type': 'contrastive+autoencoder', 'pretrained_embeds_path': '../data/visual/clip_embeds.npy'},
+        {'modality': 'visual', 'model_type': 'contrastive+VAE', 'pretrained_embeds_path': '../data/visual/clip_embeds.npy'},
         {'modality': 'visual', 'model_type': 'VAE', 'pretrained_embeds_path': '../data/visual/clip_embeds.npy'},
         {'modality': 'visual', 'model_type': 'random', 'pretrained_embeds_path': '../data/visual/clip_embeds.npy'},
 
@@ -104,6 +117,7 @@ if __name__ == '__main__':
         {'modality': 'auditory', 'model_type': 'contrastive', 'pretrained_embeds_path': '../data/auditory/ast_embeds.npy'},
         {'modality': 'auditory', 'model_type': 'autoencoder', 'pretrained_embeds_path': '../data/auditory/ast_embeds.npy'},
         {'modality': 'auditory', 'model_type': 'contrastive+autoencoder', 'pretrained_embeds_path': '../data/auditory/ast_embeds.npy'},
+        {'modality': 'auditory', 'model_type': 'contrastive+VAE', 'pretrained_embeds_path': '../data/auditory/ast_embeds.npy'},
         {'modality': 'auditory', 'model_type': 'VAE', 'pretrained_embeds_path': '../data/auditory/ast_embeds.npy'},
         {'modality': 'auditory', 'model_type': 'random', 'pretrained_embeds_path': '../data/auditory/ast_embeds.npy'},
         
@@ -111,6 +125,7 @@ if __name__ == '__main__':
          {'modality': 'auditory', 'model_type': 'contrastive', 'pretrained_embeds_path': '../data/auditory/auditory_pretrained_embeddings.npy'},
          {'modality': 'auditory', 'model_type': 'autoencoder', 'pretrained_embeds_path': '../data/auditory/auditory_pretrained_embeddings.npy'},
          {'modality': 'auditory', 'model_type': 'contrastive+autoencoder', 'pretrained_embeds_path': '../data/auditory/auditory_pretrained_embeddings.npy'},
+         {'modality': 'auditory', 'model_type': 'contrastive+VAE', 'pretrained_embeds_path': '../data/auditory/auditory_pretrained_embeddings.npy'},
          {'modality': 'auditory', 'model_type': 'VAE', 'pretrained_embeds_path': '../data/auditory/auditory_pretrained_embeddings.npy'},
          {'modality': 'auditory', 'model_type': 'random', 'pretrained_embeds_path': '../data/auditory/auditory_pretrained_embeddings.npy'},
 
@@ -118,6 +133,7 @@ if __name__ == '__main__':
         {'modality': 'kinesthetic', 'model_type': 'contrastive', 'pretrained_embeds_path': '../data/kinetic/AE_embeds.npy'},
         {'modality': 'kinesthetic', 'model_type': 'autoencoder', 'pretrained_embeds_path': '../data/kinetic/AE_embeds.npy'},
         {'modality': 'kinesthetic', 'model_type': 'contrastive+autoencoder', 'pretrained_embeds_path': '../data/kinetic/AE_embeds.npy'},
+        {'modality': 'kinesthetic', 'model_type': 'contrastive+VAE', 'pretrained_embeds_path': '../data/kinetic/AE_embeds.npy'},
         {'modality': 'kinesthetic', 'model_type': 'VAE', 'pretrained_embeds_path': '../data/kinetic/AE_embeds.npy'},
         {'modality': 'kinesthetic', 'model_type': 'random', 'pretrained_embeds_path': '../data/kinetic/AE_embeds.npy'},
     ]

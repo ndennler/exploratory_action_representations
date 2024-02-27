@@ -11,7 +11,7 @@ plt.figure(figsize=(5,6))
 # ax = sns.barplot(data=df, x='embed_name', y='metric', hue='embedding_type')
 
 df = pd.read_csv('../data/results/TPA_results.csv')
-df = df.query('pretraining != "raw" and conditioning == "independent"')
+df = df.query('pretraining != "raw" and conditioning == "taskconditioned" and embedding_size == 128')
 
 ax = sns.barplot(data=df, x='pretraining', y='metric', hue='embedding_type')
 

@@ -14,7 +14,9 @@ results = []
 for i, experiment in enumerate(experiments):
     print(f'Running experiment {i+1}/{len(experiments)}')
     modality, conditioning, pretraining, embedding_type, signals, size = experiment[:-4].split('&')
-
+    if size != '128':
+        continue
+    
     for _ in range(2):
         for task_idx in range(4):
             dataset = HCFeaturesTaskConditionedDataset( f'../data/embeds/{experiment}',

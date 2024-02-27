@@ -19,6 +19,9 @@ experiments = os.listdir('../data/embeds')
 
 for i, experiment in enumerate(experiments):
     print(f'Running experiment {i+1}/{len(experiments)}')
+    if '128' not in experiment:
+         continue
+    
     modality, conditioning, pretraining, embedding_type, signals, size = experiment[:-4].split('&')
     
     # get query data loaders
