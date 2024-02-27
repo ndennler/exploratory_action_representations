@@ -77,6 +77,13 @@ for model_path in os.listdir('../data/trained_models'):
 
     modality, task_dependency, pretrained, embedding_type, signal, size = model_path[:-4].split('&')
 
+    if os.path.isfile('../data/embeds/{modality}&{task_dependency}&{pretrained}&{embedding_type}&all_signals&{size}.npy'):
+        continue
+
+    if embedding_type != 'contrastive+VAE':
+        continue
+    
+    print(modality, task_dependency, pretrained, embedding_type, signal, size)
     #get the array of the pretrained embeddings as inputs if they were used
     if pretrained == 'raw':
             em_path = None

@@ -206,12 +206,12 @@ def train_single_epoch_with_task_embedding_from_pretrained(
     a,p,n = a.to(device), p.to(device), n.to(device)
 
     # print(anchor)
-    if embedding_type in ['contrastive', 'autoencoder', 'contrastive+autoencoder', 'contrastive+VAE']:
+    if embedding_type in ['contrastive', 'autoencoder', 'contrastive+autoencoder']:
       a_embed = task_embedder(model.encode(a), task_idxs)
       p_embed = task_embedder(model.encode(p), task_idxs)
       n_embed = task_embedder(model.encode(n), task_idxs)
 
-    elif embedding_type in ['VAE']:
+    elif embedding_type in ['VAE', 'contrastive+VAE']:
       a_embed = model.taskconditioned_forward(a, task_idxs, task_embedder)
       p_embed = model.taskconditioned_forward(p, task_idxs, task_embedder)
       n_embed = model.taskconditioned_forward(n, task_idxs, task_embedder)
@@ -229,7 +229,6 @@ def train_single_epoch_with_task_embedding_from_pretrained(
       loss = loss_fn(a_embed, anchor) + loss_fn(p_embed, positive) + loss_fn(n_embed, negative)
     
     elif embedding_type in ['VAE']:
-      #TODO: figure out how to get this to work
       loss = loss_fn(a_embed, p_embed, n_embed, anchor, positive, negative, beta=.01)
 
     elif embedding_type in ['contrastive+autoencoder']:
@@ -243,7 +242,7 @@ def train_single_epoch_with_task_embedding_from_pretrained(
     
     elif embedding_type in ['contrastive+VAE']:
       loss = loss_fn(a_embed, p_embed, n_embed, anchor, positive, negative, beta=.01)
-      loss += nn.TripletMarginLoss()(a_embed, p_embed, n_embed)
+      loss += nn.TripletMarginLoss()(a_embed['q'][:model.nz], p_embed['q'][:model.nz], n_embed['q'][:model.nz])
       
 
     loss.backward()
