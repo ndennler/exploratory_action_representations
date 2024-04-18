@@ -29,3 +29,21 @@ The naming convention for these models are:
 {modality}&{task_dependency}&{pretraining}&{embedding_type}&{signal}&{representation_size}&embedder.pth
 ```
 
+## Collecting Data
+To collect data, first start an http server in the top level folder:
+
+```
+cd path/to/exploratory_action_representations
+python3 -m http.server
+```
+
+create the experiment by running "generate_experiments.py".
+
+Edit the variables at the top of data_collection/generate_experiments.py to reflect the participants'
+current condition (auditory, visual, or kinetic as well as idle, searching, has_item, has_info). 
+
+```
+cd path/to/exploratory_action_representations/data_collection
+python3 generate_experiments.py
+```
+

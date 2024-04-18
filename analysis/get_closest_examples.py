@@ -10,9 +10,9 @@ def show_visual():
     TASK_INDEX_MAPPING = {'idle': 0, 'searching': 1, 'has_information': 2, 'has_item': 3}
 
 
-    embeds = np.load('../data/embeds/visual&taskconditioned&clip_embeds&contrastive&all_signals&128.npy')
+    embeds = np.load('../data/embeds/visual&taskconditioned&clip_embeds&contrastive+VAE&all_signals&128.npy')
 
-    example = final_signals.iloc[0]
+    example = final_signals.iloc[12]
     vis_id, signal = example['visual'], example['signal']
 
     vis = embeds[vis_id, TASK_INDEX_MAPPING[signal]]
@@ -21,21 +21,21 @@ def show_visual():
     norms = np.linalg.norm(embeds[:, TASK_INDEX_MAPPING[signal]], axis=1)
 
     sorted_ims = np.argsort(alignment / norms)
-    bottom, top = sorted_ims[:16], sorted_ims[-19:-3]
+    bottom, top = sorted_ims[:16], sorted_ims[-8:-3]
 
 
-    fig, axs = plt.subplots(4, 4, figsize=(6, 6))
-    fig.suptitle('Least Similar ' + signal)
-    print('least similar')
-    axs = axs.flatten()
-    for img, ax in zip(bottom, axs):
-        im_path = all_data.query(f'type == "Video" and id == {img}')['file']
-        if len(im_path) > 0:
-            im_path =im_path.values[0][:-4]
-            print(im_path)
-            img = Image.open("../data/visual/vis/" + im_path + '.jpg')
-            ax.imshow(img)
-            ax.axis('off')
+    # fig, axs = plt.subplots(4, 4, figsize=(6, 6))
+    # fig.suptitle('Least Similar ' + signal)
+    # print('least similar')
+    # axs = axs.flatten()
+    # for img, ax in zip(bottom, axs):
+    #     im_path = all_data.query(f'type == "Video" and id == {img}')['file']
+    #     if len(im_path) > 0:
+    #         im_path =im_path.values[0][:-4]
+    #         print(im_path)
+    #         img = Image.open("../data/visual/vis/" + im_path + '.jpg')
+    #         ax.imshow(img)
+    #         ax.axis('off')
 
     print('most similar')
     fig, axs = plt.subplots(4, 4, figsize=(6, 6))
@@ -72,7 +72,7 @@ def show_auditory(method='contrastive'):
 
     embeds = np.load(f'../data/embeds/auditory&taskconditioned&ast_embeds&{method}&all_signals&128.npy')
 
-    example = final_signals.iloc[0]
+    example = final_signals.iloc[4]
     aud_id, signal = example['auditory'], example['signal']
 
     aud = embeds[aud_id, TASK_INDEX_MAPPING[signal]]
@@ -186,4 +186,4 @@ def show_kinetic(method='contrastive'):
     plt.show()
 
 if __name__ == '__main__':
-    show_kinetic()
+    show_visual()

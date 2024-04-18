@@ -1,0 +1,11 @@
+modality,signal,pid,id1,button1,condition1,id2,button2,condition2,id3,button3,condition3,id4,button4,condition4,id5,button5,condition5
+auditory,idle,0,440,undeniable.jpg,random,357,deduction.jpg,contrastive+VAE,129,small_footprint.jpg,contrastive,754,pungent.jpg,contrastive+autoencoder,451,long_dang.jpg,VAE
+auditory,idle,0,415,silent-glass.jpg,VAE,148,fin.jpg,contrastive+autoencoder,42,trick.jpg,contrastive,454,S29_MEOW_3.jpg,autoencoder,605,asmr_girl_pick_me_up.jpg,random
+auditory,idle,0,284,something_you_dont_mess_with.jpg,contrastive+autoencoder,662,paranoid.jpg,autoencoder,473,asmr_girl_kiss.jpg,VAE,5,Fart.jpg,contrastive,604,Thinking1.jpg,contrastive+VAE
+auditory,idle,0,184,Sleep.jpg,random,148,fin.jpg,contrastive,698,Humm6.jpg,contrastive+autoencoder,653,Sad1.jpg,autoencoder,617,BANG_GOINGDOWN.jpg,contrastive+VAE
+auditory,idle,0,416,see_im_smart.jpg,random,519,Whistle1.jpg,contrastive+VAE,591,Whistle4.jpg,autoencoder,62,S52_WHISTLE.jpg,contrastive,364,Huh2.jpg,contrastive+autoencoder
+auditory,idle,0,524,the_little_dwarf.jpg,autoencoder,782,chin_up.jpg,contrastive+VAE,233,departure.jpg,random,637,in_closing.jpg,contrastive+autoencoder,323,metallic.jpg,VAE
+auditory,idle,0,790,small_tip.jpg,contrastive+VAE,744,intuition.jpg,random,706,snippy.jpg,contrastive,289,intricate.jpg,autoencoder,314,all_eyes_on_me.jpg,VAE
+auditory,idle,0,271,youve_been_informed.jpg,contrastive+VAE,245,going_up.jpg,VAE,27,oringz-pack-nine-06.jpg,autoencoder,551,good_morning.jpg,contrastive+autoencoder,326,mmm.jpg,contrastive
+auditory,idle,0,55,got_it_done.jpg,contrastive,762,morning.jpg,VAE,50,ascendent-64kbps.jpg,contrastive+VAE,517,ringing_bells_2.jpg,random,316,good-news.jpg,contrastive+autoencoder
+auditory,idle,0,77,Sad3.jpg,contrastive+VAE,266,Humm8.jpg,random,598,Sad2.jpg,contrastive+autoencoder,150,communication_channel.jpg,autoencoder,260,accomplished.jpg,VAE

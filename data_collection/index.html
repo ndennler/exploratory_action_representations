@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Preference Study</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    #main-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    #video-container {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      height: 40%;
+      width: 60%;
+    }
+
+    #video-panel {
+      display: flex;
+      align-items: center;
+      /* Center vertically */
+      justify-content: center;
+      /* Center horizontally */
+      margin-bottom: 3vh;
+      width: 40vh;
+      height: 40vh;
+      background-color: #f5f5f5;
+      z-index: 1;
+      border: 2px solid #333;
+      box-sizing: border-box;
+    }
+
+  
+#kuri-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-left: 2vh;
+  width: 20vh;
+  background-color: #f5f5f5;
+  z-index: 1;
+  border: 2px solid #333;
+  box-sizing: border-box;
+}
+
+.image-container {
+  width: 100%;
+}
+
+.caption {
+  text-align: center;
+  padding: 10px;
+}
+    #video-panel video {
+
+      width: 80%;
+      height: 100%;
+    }
+
+    #video-text {
+      margin-right: 60px;
+      /* Adjust the margin as needed */
+      text-align: justify;
+      width: 40%;
+      font-size: 30px;
+    }
+
+
+    #option-display {
+      width: 70%;
+      height: 200px;
+      border: 2px solid #333;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-evenly;
+      align-items: center;
+    }
+
+    .option-box {
+      width: 15vh;
+      height: 15vh;
+      border: 2px dashed #999;
+      margin: 10px;
+      display: flex;
+      justify-content: space-evenly;
+      align-items: center;
+      position: relative;
+    }
+
+    .option-box:hover {
+      background-color: #f0f0f0;
+    }
+
+    .option-label {
+      position: absolute;
+      bottom: -25px;
+      /* Adjust as needed */
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    #tiles-container {
+      display: flex;
+      justify-content: space-evenly;
+      align-items: center;
+      /* Center vertically */
+      width: 70%;
+      height: 200px;
+      border: 2px solid #333;
+    }
+
+    .tile {
+      width: 15vh;
+      height: 15vh;
+
+      background-color: #ccc;
+      border: 2px solid #666;
+      margin: 0px;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      /* Center horizontally */
+      align-items: center;
+      /* Center vertically */
+
+    }
+
+    .tile img {
+
+      width: 90%;
+      height: 90%;
+      object-fit: fill;
+      /* Ensure the entire box is filled */
+    }
+
+    .button-text {
+      position: absolute;
+      /* Position the text relative to the div */
+      color: white;
+      /* Set text color */
+      font-size: 14px;
+      /* Adjust font size */
+      font-weight: bold;
+      /* Adjust font weight */
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+      /* Add text shadow for better visibility */
+      text-align: center;
+    }
+
+    #reset-button {
+      margin-top: 3vh;
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #646564;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    #reset-button:hover {
+      background-color: #707470;
+    }
+
+    #submit-button {
+      height: 6vh;
+      width: 20vh;
+      margin-top: 3vh;
+      margin-right: 5vw;
+      font-size: 16px;
+      background-color: #0a6c0a;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    #submit-button:hover {
+      background-color: #139e13;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="main-container">
+
+    <div id="video-container">
+      <div id="video-text">
+        <h3>You are designing for the <i> IDLE </i> signal. </h3>
+        The idle signal is played every 10 seconds while the robot
+        waits for a command.
+      </div>
+
+      <div id="video-panel"></div>
+
+      <div id="kuri-panel">
+        <div class="image-container">
+          <img src="./Kuri.png" alt="Image of the Kuri Robot" style="width: 100%;">
+        </div>
+        <div class="caption">
+          This is the robot your signal will be played on.
+        </div>
+      </div>
+
+    </div>
+
+    <div id="option-display">
+      <div class="option-box" droppable="true">
+        <div class="option-label">Worst</div>
+      </div>
+
+
+      <div class="option-box" droppable="true"></div>
+      <div class="option-box" droppable="true"></div>
+      <div class="option-box" droppable="true"></div>
+      <div class="option-box" droppable="true">
+        <div class="option-label">Best</div>
+      </div>
+    </div>
+    <div id="tiles-container">
+      <div class="tile" draggable="true"></div>
+      <div class="tile" draggable="true"></div>
+      <div class="tile" draggable="true"></div>
+      <div class="tile" draggable="true"></div>
+      <div class="tile" draggable="true"></div>
+    </div>
+
+    <div id="button-container">
+      <button id="submit-button">Submit</button>
+      <button id="reset-button">Reset</button>
+    </div>
+
+  </div>
+
+  <script src="/data_collection/papaparse.js"></script>
+
+  <script>
+    var current_experiment = 0;
+    var experiments = [];
+    var all_responses = [];
+    total_experiments = 0;
+    var modality = '';
+    var signal = '';
+    var pid = '';
+
+    // get experiment info
+    fetch('/data_collection/experiment.csv')
+      .then(response => response.text())
+      .then(csv => {
+        // Parse CSV
+        experiments = Papa.parse(csv, { header: true }); // Set header option to true if the CSV has a header row
+        total_experiments = experiments.data.length - 1; // pandas outputs an extra blank line that is interpreted as an entry by pap parser
+        console.log(experiments.data, total_experiments); // Access parsed data
+
+        set_experiment(current_experiment);
+      })
+      .catch(error => {
+        console.error('Error loading CSV file:', error);
+      });
+
+
+
+    /*
+      Dragging functionality
+    */
+    const optionBoxes = document.querySelectorAll('.option-box');
+    const tiles = document.querySelectorAll('.tile');
+
+
+    // Store original position of tiles
+    const originalTiles = Array.from(tiles).map(tile => ({
+      tile,
+      parent: tile.parentNode,
+      nextSibling: tile.nextSibling
+    }));
+
+    tiles.forEach(tile => {
+      tile.addEventListener('dragstart', dragStart);
+      tile.addEventListener('dragend', dragEnd);
+      tile.addEventListener('click', clickButton);
+    });
+
+    function dragStart() {
+      this.classList.add('dragging');
+    }
+
+    function dragEnd() {
+      this.classList.remove('dragging');
+    }
+
+    function clickButton() {
+      if (modality == 'visual') {
+        set_video(this.children[0].src.slice(0, -4) + '.mp4');
+      }
+      else if (modality == 'auditory') {
+        set_audio(this.children[0].src.slice(0, -4) + '.wav');
+      }
+      else if (modality == 'kinetic') {
+        set_video(this.children[0].src.slice(0, -4) + '.mp4');
+      }
+    }
+
+    optionBoxes.forEach(box => {
+      box.addEventListener('dragover', dragOver);
+      box.addEventListener('dragenter', dragEnter);
+      box.addEventListener('dragleave', dragLeave);
+      box.addEventListener('drop', dragDropOptionDisplay);
+    });
+
+
+    function dragOver(e) {
+      e.preventDefault();
+    }
+
+    function dragEnter(e) {
+      e.preventDefault();
+      this.classList.add('hovered');
+    }
+
+    function dragLeave() {
+      this.classList.remove('hovered');
+    }
+
+    function dragDropOptionDisplay() {
+      const draggedTile = document.querySelector('.tile.dragging');
+      const targetBox = this;
+      const sourceBox = draggedTile.parentNode;
+
+      // If the target box is empty, simply append the dragged tile
+      if (!targetBox.querySelector('.tile')) {
+        targetBox.appendChild(draggedTile);
+      } else {
+        // Swap the tiles by replacing them in their respective containers
+        const targetTile = targetBox.querySelector('.tile');
+        targetBox.removeChild(targetTile);
+        sourceBox.appendChild(targetTile);
+        targetBox.appendChild(draggedTile);
+      }
+
+      // Remove the 'hovered' class from the target box
+      targetBox.classList.remove('hovered');
+    }
+
+    /*
+      RESET button functionality
+    */
+    const resetButton = document.getElementById('reset-button');
+
+    resetButton.addEventListener('click', resetTiles);
+
+    function resetTiles() {
+      originalTiles.forEach(data => {
+        const { tile, parent, nextSibling } = data;
+        parent.insertBefore(tile, nextSibling);
+      });
+    }
+
+    /*
+      SUBMIT button functionality
+    */
+
+    const submitButton = document.getElementById('submit-button');
+
+    submitButton.addEventListener('click', submitTiles);
+    function submitTiles() {
+
+      valid = true
+      data_to_log = [];
+
+      optionBoxes.forEach((box, i) => {
+        tile_response = box.querySelector('.tile');
+
+        if (tile_response != null) {
+          data_to_log.push({
+            'condition': tile_response.dataset.condition,
+            'rank': i,
+            'signal': signal,
+            'trial': current_experiment,
+            'modality': modality,
+            'id': tile_response.dataset.id,
+            'pid': pid,
+            'name': tile_response.dataset.path
+          });
+
+          if (i == 4) { 
+            console.log('best', tile_response.dataset.id)
+            // set the best option from this trial as one of the options for trial 5
+            index = current_experiment < 4 ? 4 : 9
+            
+            experiments.data[index][`button${current_experiment%5+1}`] = tile_response.dataset.path
+            experiments.data[index][`id${current_experiment%5+1}`] = tile_response.dataset.id
+            experiments.data[index][`condition${current_experiment%5+1}`] = tile_response.dataset.condition
+
+          }
+        }
+
+        if (tile_response == null) {
+          valid = false;
+        }
+
+      });
+
+      if (valid) {
+        console.log(data_to_log)
+        //add all of the data to the array
+        data_to_log.forEach((response) => {
+          all_responses.push(response);
+        });
+
+        current_experiment = (current_experiment + 1);
+
+        //continue to the next experiment
+        if (current_experiment < total_experiments) {
+          set_experiment(current_experiment);
+        }
+
+        //end of the study
+        else {
+          console.log(all_responses);
+          //save the data to the server
+          downloadCSV(all_responses, pid + signal + '.csv');
+
+          alert('Thank you for participating in the study. Your data has been submitted.');
+        }
+      }
+      else {
+        alert('Please rank all signals before submitting.');
+      }
+
+    }
+
+    /*
+      Video / Sound functionality
+    */
+    function set_video(path) {
+      videoPanel = document.getElementById('video-panel');
+      //clear the video panel
+      videoPanel.innerHTML = '';
+
+      //create a new video element
+      video = document.createElement('video');
+      video.src = path;
+      video.controls = false;
+      videoPanel.appendChild(video);
+      video.play();
+    }
+
+    function set_audio(path) {
+      videoPanel = document.getElementById('video-panel');
+      //clear the video panel
+      videoPanel.innerHTML = '';
+
+      //create a new video element
+      audio = document.createElement('audio');
+      audio.src = path;
+      audio.controls = true;
+      videoPanel.appendChild(audio);
+      audio.play();
+    }
+
+
+    var SIGNAL_TO_TEXT = {
+      'idle': '<h3>You are designing the <i> IDLE </i> signal.</h3> The idle signal is played every 10 seconds while the robot waits for a command.',
+      'searching': '<h3>You are designing the <i> SEARCHING </i> signal.</h3> The searching signal is played every 10 seconds while the robot actively looks for an item.',
+      'has_item': '<h3>You are designing the <i> HAS ITEM </i> signal.</h3> The "has item" signal is played when the robot is currently holding an item for you.',
+      'has_information': '<h3>You are designing the <i> HAS INFO </i> signal.</h3> The "has information" signal is played when the robot can show you where an item is located.',
+    }
+    /*
+    Experiment functionality
+    */
+    function set_experiment(experiment_number) {
+      resetTiles();
+
+      experiment = experiments.data[experiment_number];
+      modality = experiment.modality;
+      signal = experiment.signal;
+      pid = experiment.pid;
+
+      //set the text of the video
+      document.getElementById('video-text').innerHTML = SIGNAL_TO_TEXT[signal] + `<br><br>Trial ${experiment_number + 1} of ${total_experiments}.`;
+
+      //update button images
+      tiles.forEach((tile, i) => {
+
+        tile.innerHTML = '';
+        path = experiment[`button${i + 1}`]
+
+
+        //set new images
+        if (modality == 'visual') {
+          tile.innerHTML = '<img src="/data/visual/vis/' + path + '" alt="Image 1">';
+        }
+        else if (modality == 'auditory') {
+          tile.innerHTML = '<img src="/data/auditory/aud/' + path + '" alt="Image 1">';
+          if (path.length > 16) {
+            tile.innerHTML += '<span class="button-text">' + path.slice(0, 16) + '...</span>';
+          } else {
+            tile.innerHTML += '<span class="button-text">' + path.slice(0, -4) + '</span>';
+          }
+
+        }
+        else if (modality == 'kinetic') {
+          tile.innerHTML = '<img src="/data/kinetic/kin/' + path + '" alt="Image 1">';
+        }
+        tile.dataset.condition = experiment[`condition${i + 1}`]
+        tile.dataset.id = experiment[`id${i + 1}`]
+        tile.dataset.path = path
+
+
+
+      });
+    }
+
+
+
+
+
+
+    function downloadCSV(data, filename) {
+      const csv = Papa.unparse(data);
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+
+      if (navigator.msSaveBlob) { // IE 10+
+        navigator.msSaveBlob(blob, filename);
+      } else {
+        const link = document.createElement('a');
+        if (link.download !== undefined) {
+          const url = URL.createObjectURL(blob);
+          link.setAttribute('href', url);
+          link.setAttribute('download', filename);
+          link.style.visibility = 'hidden';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        }
+      }
+    }
+
+
+  </script>
+
+</body>
+
+</html>
