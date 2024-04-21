@@ -2,10 +2,17 @@ import pandas as pd
 import numpy as np
 import random
 
-#change these between participants
-SIGNAL = 'idle'
-MODALITY = 'auditory' #'auditory', 'kinesthetic', '
-PID = '0'
+#change this between participants
+PID = 3
+
+condition_data = pd.read_csv('conditions.csv')
+condition_data = condition_data.query('PID == @PID')
+
+SIGNAL = condition_data['Signal'].values[0]
+MODALITY = condition_data['Modality'].values[0]
+
+print(SIGNAL, MODALITY)
+
 NUM_TRIALS=10
 
 valid_ids = np.load('./valid_ids.npz', allow_pickle=True)
