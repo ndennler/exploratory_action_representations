@@ -3,7 +3,8 @@ import numpy as np
 import random
 
 #change this between participants
-PID = 3
+
+PID = 24
 
 condition_data = pd.read_csv('conditions.csv')
 condition_data = condition_data.query('PID == @PID')
@@ -30,7 +31,6 @@ all_data = pd.read_csv('../data/all_data.csv')
 for modality in [MODALITY]:
 
     # get 10 random signals that people actually designed
-    
     selected_indices = final_signals.query('signal == @SIGNAL')[modality].values
     selected_indices = np.random.choice(selected_indices[selected_indices >= 0], NUM_TRIALS, replace=False)
     
