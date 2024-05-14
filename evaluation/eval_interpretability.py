@@ -5,11 +5,11 @@ import matplotlib.pyplot as plt
 
 results = []
 
-for f in os.listdir('results'):
+for f in os.listdir('../data_collection/results'):
     if '.csv' not in f:
         continue
     
-    df = pd.read_csv(f'results/{f}')
+    df = pd.read_csv(f'../data_collection/results/{f}')
 
     #gets average ranking of different methods (not including the super-rankings)
     # print(df.query('trial != 4 and trial != 9').groupby('condition')['rank'].mean())

@@ -11,15 +11,16 @@ from torchmetrics import Accuracy
 
 device = 'cpu'
 results = []
+MODALITY= 'kinetic'
 
 for f in os.listdir('../data/representation_evaluation_data'):
     pid, modality, signal = f[:-4].split('&')
-    if modality != 'visual':
+    if modality != MODALITY:
          continue
 
     data = np.load(f'../data/representation_evaluation_data/{f}')
 
-    embeds = np.load(f'../data/embeds/visual&independent&raw&contrastive&all_signals&128.npy')
+    embeds = np.load(f'../data/embeds/kinesthetic&independent&raw&contrastive&all_signals&128.npy')
 
     train_loader = DataLoader(UserStudyQueryDataloader(data['train'], embeds, signal, transform=torch.Tensor), 16)
 
@@ -34,6 +35,7 @@ for f in os.listdir('../data/representation_evaluation_data'):
 
             r1 = reward_model(option1.to(device))
             r2 = reward_model(option2.to(device))
+            
             rewards = torch.cat((r1,r2), 1)
 
             loss = torch.nn.CrossEntropyLoss()(rewards, choice.to(device))

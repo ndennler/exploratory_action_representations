@@ -92,7 +92,7 @@ if __name__ == '__main__':
     NUM_EPOCHS = 300
     DEVICE = 'cuda:0'
 
-    for modality in ['kinesthetic', 'auditory', 'visual']:
+    for modality in ['auditory', 'visual','kinesthetic']:
         for signal in ['idle', 'searching', 'has_item', 'has_information']:
             for model_type in ['contrastive', 'random', 'autoencoder', 'VAE', 'contrastive+autoencoder']:
                         
