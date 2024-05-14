@@ -6,7 +6,7 @@ class RewardLearner(nn.Module):
   def __init__(
       self,
       input_dim: int = 1024,
-      hidden_dim: int = 256,
+      hidden_dim: int = 1024,
       device: str = "cuda"
   ):
     super(RewardLearner, self).__init__()
@@ -15,10 +15,11 @@ class RewardLearner(nn.Module):
     self.encoder = nn.Sequential(
         nn.Flatten(),
         nn.Linear(input_dim, hidden_dim),
-        nn.Sigmoid(),
-        # nn.ReLU(),
-        # nn.Linear(hidden_dim, hidden_dim),
-        # nn.ReLU(),
+        # nn.Sigmoid(),
+        nn.ReLU(),
+        nn.Linear(hidden_dim, hidden_dim),
+        # nn.Sigmoid(),
+        nn.ReLU(),
         nn.Linear(hidden_dim, 1),
       
         # nn.Linear(input_dim, 1),

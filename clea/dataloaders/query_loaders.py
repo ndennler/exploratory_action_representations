@@ -198,6 +198,32 @@ class CachedRawQueryTaskEmbeddingDataset(Dataset):
                 torch.tensor(selected_index), options
     
 
+
+class UserStudyQueryDataloader(Dataset):
+    '''
+    Dataset that loads the pariwise queries generated from the user study.
+    '''
+    def __init__(self, query_array, embeddings_array, signal, transform=None):
+        self.transform = transform
+
+        self.embeddings = embeddings_array
+        self.data = query_array # n x 2 array, second index is preferred index
+        self.signal_index = TASK_INDEX_MAPPING[signal]
+      
+    def __len__(self):
+        return len(self.data)
+    
+    def __getitem__(self, item):
+        i1,i2 = self.data[item]
+        e1, e2 = self.embeddings[i1, self.signal_index], self.embeddings[i2, self.signal_index]
+        e1, e2 = self.transform(e1), self.transform(e2)
+
+        if np.random.rand() < .5:
+            return e1,e2, torch.tensor(1)
+        else:
+            return e2,e1, torch.tensor(0)
+
+
         
 if __name__ == '__main__':
     kind = 'visual'

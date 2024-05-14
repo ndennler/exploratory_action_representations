@@ -4,7 +4,7 @@ import random
 
 #change this between participants
 
-PID = 24
+PID = 42
 
 condition_data = pd.read_csv('conditions.csv')
 condition_data = condition_data.query('PID == @PID')
