@@ -137,9 +137,7 @@ def get_train_test_dataloaders(
     train_set = df.iloc[train_index]
 
     if raw_data:
-      dataset = CachedRawQueryDataset(train_set, train=True, transform=torch.Tensor, name=model_name)
-      if signal == 'all_signals':
-        dataset = CachedRawQueryTaskEmbeddingDataset(train_set, train=True, transform=torch.Tensor, name=model_name)
+      dataset = RawQueryDataset(train_set, train=True, transform=torch.Tensor, name=model_name)
     else:
       dataset = QueryDataset(train_set, train=True, kind=signal_modality, transform=torch.Tensor)
     train_dataloader = DataLoader(dataset, batch_size=batch_size)
@@ -147,9 +145,7 @@ def get_train_test_dataloaders(
 
     test_set = df.iloc[test_index]
     if raw_data:
-      dataset = CachedRawQueryDataset(test_set, train=True, transform=torch.Tensor, name=model_name)
-      if signal == 'all_signals':
-        dataset = CachedRawQueryTaskEmbeddingDataset(test_set, train=True, transform=torch.Tensor, name=model_name)
+      dataset = RawQueryDataset(test_set, train=True, transform=torch.Tensor, name=model_name)
     else:
       dataset = QueryDataset(test_set, train=True, kind=signal_modality, transform=torch.Tensor)
     test_dataloader = DataLoader(dataset, batch_size=batch_size)
@@ -183,9 +179,9 @@ def train_single_epoch(
     optimizer.zero_grad()
 
     # comment out if we are using raw data
-    # option1 = embedding_model.encode(option1)
-    # option2 = embedding_model.encode(option2)
-    # option3 = embedding_model.encode(option3)
+    option1 = embedding_model.encode(option1)
+    option2 = embedding_model.encode(option2)
+    option3 = embedding_model.encode(option3)
 
     r1 = reward_model(option1)
     r2 = reward_model(option2)
@@ -367,13 +363,13 @@ def eval_model(
     option3 = option3.to(device)
     choice = choice.to(device)
 
-    # r1 = reward_model(embedding_model.encode(option1))
-    # r2 = reward_model(embedding_model.encode(option2))
-    # r3 = reward_model(embedding_model.encode(option3))
+    r1 = reward_model(embedding_model.encode(option1))
+    r2 = reward_model(embedding_model.encode(option2))
+    r3 = reward_model(embedding_model.encode(option3))
 
-    r1 = reward_model(option1)
-    r2 = reward_model(option2)
-    r3 = reward_model(option3)
+    # r1 = reward_model(option1)
+    # r2 = reward_model(option2)
+    # r3 = reward_model(option3)
 
     r4 = torch.zeros(r1.shape).to(device)
     rewards = torch.cat((r1,r2,r3,r4), 1).to(device)
