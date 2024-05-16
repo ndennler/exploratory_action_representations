@@ -166,6 +166,8 @@ def train_single_epoch(
   # set model to training mode
   embedding_model.eval()
   embedding_model.to(device)
+  if hasattr(embedding_model, 'encoder'): #clean this up with a model.move_to_device
+        embedding_model.encoder.device = device
   reward_model.train()
   reward_model.to(device)
   train_loss = 0

@@ -110,7 +110,7 @@ class Seq2Seq(nn.Module):
 
 
 class Seq2SeqVAE(nn.Module):
-    def __init__(self, input_size, hidden_size, num_layers, dropout=.2, device='cpu'):
+    def __init__(self, input_size, hidden_size, num_layers, dropout=.2, beta = 1, device='cpu'):
         super(Seq2SeqVAE, self).__init__()
         self.input_size = input_size
         self.hidden_size = hidden_size
@@ -118,6 +118,7 @@ class Seq2SeqVAE(nn.Module):
         self.dropout = dropout
         self.device = device
         self.nz = hidden_size
+        self.beta = beta
         
         self.encoder = RawSequenceEncoder(input_size, 2*hidden_size, num_layers, dropout, device)
         self.decoder = RawSequenceDecoder(input_size, hidden_size, num_layers, dropout, device)
@@ -204,7 +205,7 @@ class Seq2SeqVAE(nn.Module):
                 self.kl_divergence(p_m, p_dev, desired_m, desired_dev).mean() + \
                 self.kl_divergence(n_m, n_dev, desired_m, desired_dev).mean()
       
-      return rec_loss + beta * kl_loss
+      return rec_loss + self.beta * kl_loss
 
 
     

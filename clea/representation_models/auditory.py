@@ -171,11 +171,13 @@ class RawAudioVAE(nn.Module):
       input_dim: list,
       hidden_dim: int = 256,
       latent_dim: int = 32,
+      beta: float = 1,
       device: str = "cuda:0",
   ):
     super(RawAudioVAE, self).__init__()
     self.device = device
     self.nz = latent_dim
+    self.beta = beta
 
     self.encoder = RawAudioEncoder(input_dim, hidden_dim, 2*latent_dim, device)
     self.decoder = RawAudioDecoder(self.encoder.get_intermediate_size(), self.encoder.get_reshape_size(), hidden_dim, latent_dim, device)
@@ -223,7 +225,7 @@ class RawAudioVAE(nn.Module):
               self.kl_divergence(p_m, p_dev, desired_m, desired_dev).mean() + \
               self.kl_divergence(n_m, n_dev, desired_m, desired_dev).mean()
     
-    return rec_loss + beta * kl_loss
+    return rec_loss + self.beta * kl_loss
   
 
 

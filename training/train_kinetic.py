@@ -97,15 +97,16 @@ def eval(model_type, EMBEDDING_DIM=128, DEVICE='cpu'):
         results = []
 
         for sig in ['idle', 'searching', 'has_information', 'has_item']:
-                embedding_model = torch.load(f'../data/trained_models2/kinesthetic&{model_type}&{sig}&{EMBEDDING_DIM}.pth', map_location=torch.device(DEVICE))
-               
+                embedding_model = torch.load(f'../data/trained_models2/kinesthetic&{model_type}&{sig}&{EMBEDDING_DIM}.pth', map_location=torch.device('cpu'))
+                embedding_model.device = 'cpu'
+
                 for PID in query_df['pid'].unique():
                         query = f'type == "kinesthetic" and pid == {PID}'
 
                         df = query_df.query(f'{query} and signal == "{sig}"')
-                        if len(df) < 2:
+                        if len(df) < 4:
                                 continue
-                        train_idx = len(df) // 2
+                        train_idx = len(df) // 4
 
                         train_df = df.iloc[train_idx:]
                         test_df = df.iloc[:train_idx]
@@ -123,7 +124,7 @@ def eval(model_type, EMBEDDING_DIM=128, DEVICE='cpu'):
                                                 loss_fn=nn.CrossEntropyLoss(), 
                                                 optimizer=optim.Adam(reward_model.parameters()),
                                                 epoch=i, 
-                                                device=DEVICE)
+                                                device='cpu')
                         
                         test_data = RawQueryDataset(test_df, kind='kinesthetic', transform=torch.Tensor, data_dir='../data/')
                         test_dataloader = DataLoader(test_data, batch_size=32)
@@ -132,7 +133,7 @@ def eval(model_type, EMBEDDING_DIM=128, DEVICE='cpu'):
                                 reward_model=reward_model,
                                 eval_fn=Accuracy(task="multiclass", num_classes=4).to(DEVICE),
                                 data_loader=test_dataloader,
-                                device=DEVICE
+                                device='cpu'
                         )
 
                         results.append(acc)
@@ -147,15 +148,16 @@ def eval(model_type, EMBEDDING_DIM=128, DEVICE='cpu'):
 if __name__ == '__main__':
 
         BATCH_SIZE = 64
-        EMBEDDING_DIM = 128
+        EMBEDDING_DIM = 32
         LR = 1e-3
-        NUM_EPOCHS = 5
-        DEVICE = 'cpu'
+        NUM_EPOCHS = 100
+        DEVICE = 'cuda:0'
         results = {}
         #change these test values; train to get ideal value for contrastive loss and VAE loss
-        for parameter in [0.1, 0.5, .9, 2, 5, 10]:
-                train('contrastive', DEVICE, BATCH_SIZE, EMBEDDING_DIM, LR, NUM_EPOCHS, parameter=parameter)
-                acc = eval('contrastive', EMBEDDING_DIM, DEVICE)
+        # for parameter in [0.1, 0.5, .9, 2, 5, 10]:
+        for parameter in [.001, 0.01, 0.1, 1, 10]:
+                train('VAE', DEVICE, BATCH_SIZE, EMBEDDING_DIM, LR, NUM_EPOCHS, parameter=parameter)
+                acc = eval('VAE', EMBEDDING_DIM)
                 results[parameter] = acc
         print(results)
 

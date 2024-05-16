@@ -35,11 +35,11 @@ def get_model_and_loss_fn(model_type: str,
   
     if model_type == 'contrastive':
         if modality == 'auditory':
-            return RawAudioEncoder(input_dim, hidden_dim, latent_dim, device=device), nn.TripletMarginLoss()
+            return RawAudioEncoder(input_dim, hidden_dim, latent_dim, device=device), nn.TripletMarginLoss(margin=.1)
         elif modality == 'visual':
-            return RawImageEncoder(input_dim, hidden_dim, latent_dim, device=device), nn.TripletMarginLoss()
+            return RawImageEncoder(input_dim, hidden_dim, latent_dim, device=device), nn.TripletMarginLoss(margin=.1)
         elif modality == 'kinesthetic':
-            return RawSequenceEncoder(input_size=3, hidden_size=latent_dim, num_layers=2, device=device), nn.TripletMarginLoss()
+            return RawSequenceEncoder(input_size=3, hidden_size=latent_dim, num_layers=2, device=device), nn.TripletMarginLoss(margin=2)
 
     elif model_type == 'random':
         if modality == 'auditory':
@@ -67,13 +67,24 @@ def get_model_and_loss_fn(model_type: str,
 
     elif model_type == 'VAE':
         if modality == 'auditory':
-            model = RawAudioVAE(input_dim, hidden_dim, latent_dim, device=device)
+            model = RawAudioVAE(input_dim, hidden_dim, latent_dim, device=device, beta=10)
             return model, model.vae_loss
         elif modality == 'visual':
-            model = RawImageVAE(input_dim, hidden_dim, latent_dim, device=device)
+            model = RawImageVAE(input_dim, hidden_dim, latent_dim, device=device, beta=1)
             return model, model.vae_loss
         elif modality == 'kinesthetic':
-            model = Seq2SeqVAE(input_size=3, hidden_size=latent_dim, num_layers=2, device=device)
+            model = Seq2SeqVAE(input_size=3, hidden_size=latent_dim, num_layers=2, device=device, beta=10)
+            return model, model.vae_loss
+    
+    elif model_type == 'contrastive+VAE':
+        if modality == 'auditory':
+            model = RawAudioVAE(input_dim, hidden_dim, latent_dim, device=device, beta=10)
+            return model, model.vae_loss
+        elif modality == 'visual':
+            model = RawImageVAE(input_dim, hidden_dim, latent_dim, device=device, beta=1)
+            return model, model.vae_loss
+        elif modality == 'kinesthetic':
+            model = Seq2SeqVAE(input_size=3, hidden_size=latent_dim, num_layers=2, device=device, beta=10)
             return model, model.vae_loss
 
 
@@ -87,14 +98,19 @@ from clea.representation_models.train_model_utils import train_single_epoch
 if __name__ == '__main__':
 
     BATCH_SIZE = 128
-    EMBEDDING_DIM = 128
-    LR = 1e-4
+    EMBEDDING_DIM = 8
+    LR = 1e-3
     NUM_EPOCHS = 300
     DEVICE = 'cuda:0'
 
     for modality in ['auditory', 'visual','kinesthetic']:
+        if modality == 'kinesthetic':
+            margin = 2
+        else:
+            margin = .1
+
         for signal in ['idle', 'searching', 'has_item', 'has_information']:
-            for model_type in ['contrastive', 'random', 'autoencoder', 'VAE', 'contrastive+autoencoder']:
+            for model_type in ['contrastive+VAE', 'contrastive', 'random', 'autoencoder', 'VAE', 'contrastive+autoencoder']:
                         
                 print(f'Training {modality} modality;  {signal} signal; {model_type} model;')
 
@@ -115,7 +131,7 @@ if __name__ == '__main__':
 
                     for i in tqdm(range(NUM_EPOCHS)):
                         iterations, avg_loss = train_single_epoch(embedding_type=model_type, model=model, 
-                                                loss_fn=loss_fn, data_loader=data, optimizer=optimizer, epoch=i, device=DEVICE)
+                                                loss_fn=loss_fn, data_loader=data, optimizer=optimizer, epoch=i, device=DEVICE, margin=margin)
                         training_results.append({'iters': iterations, 'loss': avg_loss})
                         tqdm.write(f'Epoch {i} loss: {avg_loss}')
 

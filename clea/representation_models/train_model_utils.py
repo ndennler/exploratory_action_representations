@@ -49,6 +49,7 @@ def train_single_epoch(
     optimizer,
     epoch: int,
     device: str = 'cuda',
+    margin: float = 1
 ):
 
   train_loss = 0
@@ -78,7 +79,11 @@ def train_single_epoch(
 
     elif embedding_type in ['contrastive+autoencoder']:
       loss = loss_fn(a_embed, anchor) + loss_fn(p_embed, positive) + loss_fn(n_embed, negative)
-      loss += nn.TripletMarginLoss()(model.encode(anchor),model.encode(positive),model.encode(negative))
+      loss += nn.TripletMarginLoss(margin=margin)(model.encode(anchor),model.encode(positive),model.encode(negative))
+
+    elif embedding_type in ['contrastive+VAE']:
+      loss = loss_fn(a_embed, p_embed, n_embed, anchor, positive, negative, beta=.01)
+      loss += nn.TripletMarginLoss(margin=margin)(model.encode(anchor),model.encode(positive),model.encode(negative))
 
     loss.backward()
     train_loss += loss.item()

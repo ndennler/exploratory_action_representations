@@ -102,9 +102,9 @@ def eval(model_type, EMBEDDING_DIM=128, DEVICE='cpu'):
                         query = f'type == "auditory" and pid == {PID}'
 
                         df = query_df.query(f'{query} and signal == "{sig}"')
-                        if len(df) < 2:
+                        if len(df) < 4:
                                 continue
-                        train_idx = len(df) // 2
+                        train_idx = len(df) // 4
 
                         train_df = df.iloc[train_idx:]
                         test_df = df.iloc[:train_idx]
@@ -140,26 +140,20 @@ def eval(model_type, EMBEDDING_DIM=128, DEVICE='cpu'):
         return np.nanmean(results)
 
 
-                        
-
-
-
-
-
-
 
 if __name__ == '__main__':
 
         BATCH_SIZE = 64
         EMBEDDING_DIM = 128
         LR = 1e-3
-        NUM_EPOCHS = 5
-        DEVICE = 'mps'
+        NUM_EPOCHS = 100
+        DEVICE = 'cuda:0'
         results = {}
         #change these test values; train to get ideal value for contrastive loss and VAE loss
-        for parameter in [0.1, 0.5, .9, 2, 5, 10]:
-                train('contrastive', DEVICE, BATCH_SIZE, EMBEDDING_DIM, LR, NUM_EPOCHS, parameter=parameter)
-                acc = eval('contrastive', EMBEDDING_DIM, DEVICE)
+        # for parameter in [.01, 0.1, 0.5, .9, 2, 5, 10]:
+        for parameter in [.001, 0.01, 0.1, 1, 10]:
+                train('VAE', DEVICE, BATCH_SIZE, EMBEDDING_DIM, LR, NUM_EPOCHS, parameter=parameter)
+                acc = eval('VAE', EMBEDDING_DIM, DEVICE)
                 results[parameter] = acc
         print(results)
 
