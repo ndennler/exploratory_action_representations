@@ -98,7 +98,7 @@ from clea.representation_models.train_model_utils import train_single_epoch
 if __name__ == '__main__':
 
     BATCH_SIZE = 128
-    EMBEDDING_DIM = 8
+    EMBEDDING_DIM = 4
     LR = 1e-3
     NUM_EPOCHS = 300
     DEVICE = 'cuda:0'
