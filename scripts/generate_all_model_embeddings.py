@@ -80,7 +80,7 @@ for model_path in os.listdir('../data/trained_models'):
     if os.path.isfile('../data/embeds/{modality}&{task_dependency}&{pretrained}&{embedding_type}&all_signals&{size}.npy'):
         continue
 
-    if embedding_type != 'contrastive+VAE':
+    if embedding_type == 'contrastive+VAE':
         continue
     
     print(modality, task_dependency, pretrained, embedding_type, signal, size)
