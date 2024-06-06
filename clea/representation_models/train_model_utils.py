@@ -73,6 +73,7 @@ def train_single_epoch(
     
     elif embedding_type in ['autoencoder']:
       loss = loss_fn(a_embed, anchor) + loss_fn(p_embed, positive) + loss_fn(n_embed, negative)
+      loss +=  0.01*torch.norm(a_embed, p=1) + 0.01*torch.norm(p_embed, p=1) + 0.01*torch.norm(n_embed, p=1)
     
     elif embedding_type in ['VAE']:
       loss = loss_fn(a_embed, p_embed, n_embed, anchor, positive, negative, beta=.01)
