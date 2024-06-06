@@ -1,67 +1,54 @@
-import os
-import torch
-
 import pandas as pd
-import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
 
-from clea.dataloaders import UserStudyQueryDataloader
-from clea.reward_models import RewardLearner
-from torch.utils.data import DataLoader
-from torchmetrics import Accuracy
+df = pd.read_csv('nn_results.csv')
+# df = df.query('modality != "auditory"')
+EM = 128
 
-device = 'cpu'
-results = []
-MODALITY= 'kinetic'
+fig = plt.figure(figsize=(6.5, 5.5))
+plt.rcParams["font.family"] = "serif"
+plt.rcParams['font.size'] = 14
 
-for f in os.listdir('../data/representation_evaluation_data'):
-    pid, modality, signal = f[:-4].split('&')
-    if modality != MODALITY:
-         continue
+name2label = {
+    'random': 'Random',
+    'autoencoder': 'AE',
+    'VAE': 'VAE',
+    'contrastive': 'CLEA',
+    'contrastive+autoencoder': 'CLEA+AE',
+    'contrastive+VAE': 'CLEA+VAE'
+}
 
-    data = np.load(f'../data/representation_evaluation_data/{f}')
+df['method'] = df['method'].apply(lambda x: name2label[x])
 
-    embeds = np.load(f'../data/embeds/kinesthetic&independent&raw&contrastive&all_signals&128.npy')
+hue_order = ['random', 'autoencoder', 'VAE', 'contrastive', 'contrastive+autoencoder', 'contrastive+VAE']
+hue_order = [name2label[h] for h in hue_order]
+palette = ['#999999', '#0033cc', '#3399ff', 'tab:orange', '#ff6600', '#ff9966']
 
-    train_loader = DataLoader(UserStudyQueryDataloader(data['train'], embeds, signal, transform=torch.Tensor), 16)
+palette = {
+    'CLEA': 'tab:orange',
+    'CLEA+AE': '#d62b0d',
+    'CLEA+VAE': '#decb3a',
+    'VAE': '#3399ff',
+    'Random': '#999999',
+    'AE': '#0033cc'
+}
+ax = sns.barplot(data=df.query(f'embedding_size == {EM}'), x='modality', y='accuracy', hue='method', 
+            hue_order=hue_order, palette=palette, capsize=.1, errwidth=0.8, order=['visual', 'auditory','kinetic'])
 
-    reward_model = RewardLearner(128)
-    reward_model.to(device)
-    optimizer = torch.optim.Adam(reward_model.parameters(), lr=1e-3)
 
-    #training loop
-    for _ in range(15):
-        for option1, option2, choice in train_loader:
-            optimizer.zero_grad()
+ax.set_axisbelow(True)
+ax.grid(color='#DEDEDE', linestyle='dashed')
+plt.xlabel('')
+plt.ylabel('Predicted Choice Accuracy')
+plt.ylim(0.5, 1)
 
-            r1 = reward_model(option1.to(device))
-            r2 = reward_model(option2.to(device))
-            
-            rewards = torch.cat((r1,r2), 1)
+reorder=lambda hl,nc:(sum((lis[i::nc]for i in range(nc)),[])for lis in hl)
+h_l = ax.get_legend_handles_labels()
+ax.legend(*reorder(h_l, 3), ncol=3, bbox_to_anchor=(.5, 1.2), loc='upper center')
 
-            loss = torch.nn.CrossEntropyLoss()(rewards, choice.to(device))
-            loss.backward()
-            optimizer.step()
-            # print(loss.item())
-    
-    #evaluation loop
-    reward_model.eval()
-    eval_loader = DataLoader(UserStudyQueryDataloader(data['test'], embeds, signal, transform=torch.Tensor), 16)
+# plt.legend(ncol=6, bbox_to_anchor=(1.1, 1.15), prop={'size': 10})
+plt.xticks([0, 1, 2], ['Visual', 'Auditory', 'Kinetic'])
 
-    eval_fn = Accuracy(task="multiclass", num_classes=2).to(device)
-    eval_values = []
-
-    for option1, option2, choice in train_loader:
-            optimizer.zero_grad()
-
-            r1 = reward_model(option1.to(device))
-            r2 = reward_model(option2.to(device))
-            rewards = torch.cat((r1,r2), 1)
-
-            eval_result = eval_fn(rewards, choice)
-            eval_values.append(eval_result.item())
-
-    print('Accuracy:')
-    print(np.nanmean(eval_values))
-    results.append(np.nanmean(eval_values))
-
-print(np.mean(results))
+plt.tight_layout()
+plt.show()

@@ -4,7 +4,7 @@ import random
 
 #change this between participants
 
-PID = 42
+PID = 43
 
 condition_data = pd.read_csv('conditions.csv')
 condition_data = condition_data.query('PID == @PID')
@@ -42,7 +42,7 @@ for modality in [MODALITY]:
         paths = []
 
         for method in random.sample(['random', 'contrastive+autoencoder', 'VAE', 'autoencoder', 'contrastive', 'contrastive+VAE'], 5):
-            embeds = np.load(f'../data/embeds/{modality}&taskconditioned&{MODALITY_EMBED_MAPPING[modality]}&{method}&all_signals&128.npy')
+            embeds = np.load(f'../data/collection_embeds/{modality}&taskconditioned&{MODALITY_EMBED_MAPPING[modality]}&{method}&all_signals&128.npy')
             
             target = embeds[index, TASK_INDEX_MAPPING[SIGNAL]]
             alignment = (target @ embeds[:, TASK_INDEX_MAPPING[SIGNAL]].T)

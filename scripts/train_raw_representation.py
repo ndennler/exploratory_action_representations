@@ -98,7 +98,7 @@ from clea.representation_models.train_model_utils import train_single_epoch
 if __name__ == '__main__':
 
     BATCH_SIZE = 128
-    EMBEDDING_DIM = 4
+    EMBEDDING_DIM = 8
     LR = 1e-3
     NUM_EPOCHS = 300
     DEVICE = 'cuda:0'
@@ -115,7 +115,8 @@ if __name__ == '__main__':
                 print(f'Training {modality} modality;  {signal} signal; {model_type} model;')
 
                 #1. get dataloader
-                data, input_dim = get_dataloader(batch_size=BATCH_SIZE, modality=modality, signal=signal)    
+                data, input_dim = get_dataloader(batch_size=BATCH_SIZE, modality=modality, signal=signal)  
+                print(data.dataset[0][0].shape)  
 
                 #2. get model
                 model, loss_fn = get_model_and_loss_fn(model_type=model_type, modality=modality, input_dim=input_dim, latent_dim=EMBEDDING_DIM, device=DEVICE)
@@ -135,8 +136,10 @@ if __name__ == '__main__':
                         training_results.append({'iters': iterations, 'loss': avg_loss})
                         tqdm.write(f'Epoch {i} loss: {avg_loss}')
 
+                    pd.DataFrame(training_results).to_csv(f'../data/trained_models/{modality}&independent&raw&{model_type}&{signal}&{EMBEDDING_DIM}.csv')
+
                 #4. save model and data
                 torch.save(model, f'../data/trained_models/{modality}&independent&raw&{model_type}&{signal}&{EMBEDDING_DIM}.pth')
-                pd.DataFrame(training_results).to_csv(f'../data/trained_models/{modality}&independent&raw&{model_type}&{signal}&{EMBEDDING_DIM}.csv')
+                
 
 ############################################################################################################

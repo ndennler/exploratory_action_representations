@@ -8,6 +8,7 @@ for result in os.listdir('results'):
 
     df = pd.read_csv(f'./results/{result}')
 
+    top_choice = df.query('rank == 4 and (trial == 9)').id.values[0]
     PID = df['pid'].values[0]
     signal = df['signal'].values[0]
     modality = df['modality'].values[0]
@@ -31,8 +32,8 @@ for result in os.listdir('results'):
                 if to_add not in transitives:
                     transitives.append(to_add)
 
-    dataset = comps # + transitives
+    dataset = comps + transitives
     train = int(len(dataset)*.7)
     np.random.shuffle(dataset)
     print(train, len(dataset) - train)
-    np.savez(f'./processed_results/{PID}&{modality}&{signal}.npz', train=dataset[:train], test=dataset[train:])
+    np.savez(f'./processed_results/{PID}&{modality}&{signal}.npz', train=dataset[:train], test=dataset[train:], top_id=top_choice)
