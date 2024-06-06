@@ -78,4 +78,4 @@ for embed_fname in os.listdir('../data/embeds'):
              'accuracy': np.nanmean(eval_values),
         })
 
-pd.DataFrame(results).to_csv('nn_results.csv')
+pd.DataFrame(results).to_csv('nn_results3.csv')

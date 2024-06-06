@@ -80,8 +80,10 @@ for model_path in os.listdir('../data/trained_models'):
     if os.path.isfile('../data/embeds/{modality}&{task_dependency}&{pretrained}&{embedding_type}&all_signals&{size}.npy'):
         continue
 
-    if embedding_type == 'contrastive+VAE':
+    if embedding_type != 'autoencoder':
         continue
+    # if size != '128':
+    #     continue
     
     print(modality, task_dependency, pretrained, embedding_type, signal, size)
     #get the array of the pretrained embeddings as inputs if they were used

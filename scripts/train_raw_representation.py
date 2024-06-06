@@ -98,48 +98,49 @@ from clea.representation_models.train_model_utils import train_single_epoch
 if __name__ == '__main__':
 
     BATCH_SIZE = 128
-    EMBEDDING_DIM = 8
+    EMBEDDING_DIM = 128
     LR = 1e-3
     NUM_EPOCHS = 300
     DEVICE = 'cuda:0'
+    for EMBEDDING_DIM in [8,16,32,64]:
+        for modality in ['auditory', 'visual','kinesthetic']:
+            if modality == 'kinesthetic':
+                margin = 2
+            else:
+                margin = .1
 
-    for modality in ['auditory', 'visual','kinesthetic']:
-        if modality == 'kinesthetic':
-            margin = 2
-        else:
-            margin = .1
+            for signal in ['idle', 'searching', 'has_item', 'has_information']:
+                # for model_type in ['contrastive+VAE', 'contrastive', 'random', 'autoencoder', 'VAE', 'contrastive+autoencoder']:
+                for model_type in ['autoencoder']:
+                            
+                    print(f'Training {modality} modality;  {signal} signal; {model_type} model;')
 
-        for signal in ['idle', 'searching', 'has_item', 'has_information']:
-            for model_type in ['contrastive+VAE', 'contrastive', 'random', 'autoencoder', 'VAE', 'contrastive+autoencoder']:
-                        
-                print(f'Training {modality} modality;  {signal} signal; {model_type} model;')
+                    #1. get dataloader
+                    data, input_dim = get_dataloader(batch_size=BATCH_SIZE, modality=modality, signal=signal)  
+                    print(data.dataset[0][0].shape)  
 
-                #1. get dataloader
-                data, input_dim = get_dataloader(batch_size=BATCH_SIZE, modality=modality, signal=signal)  
-                print(data.dataset[0][0].shape)  
+                    #2. get model
+                    model, loss_fn = get_model_and_loss_fn(model_type=model_type, modality=modality, input_dim=input_dim, latent_dim=EMBEDDING_DIM, device=DEVICE)
 
-                #2. get model
-                model, loss_fn = get_model_and_loss_fn(model_type=model_type, modality=modality, input_dim=input_dim, latent_dim=EMBEDDING_DIM, device=DEVICE)
+                    #3. train model
+                    if loss_fn is not None:
 
-                #3. train model
-                if loss_fn is not None:
+                        optimizer = optim.Adam(model.parameters(), lr=LR)
+                        training_results = []
+                        # set model to training mode on correct device
+                        model.train()
+                        model.to(DEVICE)
 
-                    optimizer = optim.Adam(model.parameters(), lr=LR)
-                    training_results = []
-                    # set model to training mode on correct device
-                    model.train()
-                    model.to(DEVICE)
+                        for i in tqdm(range(NUM_EPOCHS)):
+                            iterations, avg_loss = train_single_epoch(embedding_type=model_type, model=model, 
+                                                    loss_fn=loss_fn, data_loader=data, optimizer=optimizer, epoch=i, device=DEVICE, margin=margin)
+                            training_results.append({'iters': iterations, 'loss': avg_loss})
+                            tqdm.write(f'Epoch {i} loss: {avg_loss}')
 
-                    for i in tqdm(range(NUM_EPOCHS)):
-                        iterations, avg_loss = train_single_epoch(embedding_type=model_type, model=model, 
-                                                loss_fn=loss_fn, data_loader=data, optimizer=optimizer, epoch=i, device=DEVICE, margin=margin)
-                        training_results.append({'iters': iterations, 'loss': avg_loss})
-                        tqdm.write(f'Epoch {i} loss: {avg_loss}')
+                        pd.DataFrame(training_results).to_csv(f'../data/trained_models/{modality}&independent&raw&{model_type}&{signal}&{EMBEDDING_DIM}.csv')
 
-                    pd.DataFrame(training_results).to_csv(f'../data/trained_models/{modality}&independent&raw&{model_type}&{signal}&{EMBEDDING_DIM}.csv')
-
-                #4. save model and data
-                torch.save(model, f'../data/trained_models/{modality}&independent&raw&{model_type}&{signal}&{EMBEDDING_DIM}.pth')
+                    #4. save model and data
+                    torch.save(model, f'../data/trained_models/{modality}&independent&raw&{model_type}&{signal}&{EMBEDDING_DIM}.pth')
                 
 
 ############################################################################################################
