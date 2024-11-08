@@ -49,12 +49,17 @@ def train_single_epoch(
     optimizer,
     epoch: int,
     device: str = 'cuda',
-    margin: float = 1
+    margin: float = 1,
+    weighted: bool = False
 ):
 
   train_loss = 0
-  for batch_idx, (anchor, positive, negative) in enumerate(data_loader):
-    # print(anchor.shape)
+  for batch_idx, batch in enumerate(data_loader):
+    anchor, positive, negative = batch[0], batch[1], batch[2]
+    if weighted:
+       weights = batch[3]
+    
+    print(weights)
     optimizer.zero_grad()
 
     anchor = anchor.to(device)
@@ -70,6 +75,7 @@ def train_single_epoch(
     # compute loss
     if embedding_type in ['contrastive']:
       loss = loss_fn(a_embed, p_embed, n_embed)
+      loss = loss.mean()
     
     elif embedding_type in ['autoencoder']:
       loss = loss_fn(a_embed, anchor) + loss_fn(p_embed, positive) + loss_fn(n_embed, negative)
@@ -82,11 +88,17 @@ def train_single_epoch(
 
     elif embedding_type in ['contrastive+autoencoder']:
       loss = loss_fn(a_embed, anchor) + loss_fn(p_embed, positive) + loss_fn(n_embed, negative)
-      loss += nn.TripletMarginLoss(margin=margin)(model.encode(anchor),model.encode(positive),model.encode(negative))
+      trip_loss = nn.TripletMarginLoss(margin=margin, reduction='none')(model.encode(anchor),model.encode(positive),model.encode(negative))
+      if weighted:
+        trip_loss = trip_loss * weights
+      loss += trip_loss.mean()
 
     elif embedding_type in ['contrastive+VAE']:
       loss = loss_fn(a_embed, p_embed, n_embed, anchor, positive, negative, beta=.01)
-      loss += nn.TripletMarginLoss(margin=margin)(model.encode(anchor),model.encode(positive),model.encode(negative))
+      trip_loss = nn.TripletMarginLoss(margin=margin, reduction='none')(model.encode(anchor),model.encode(positive),model.encode(negative))
+      if weighted:
+        trip_loss = trip_loss * weights
+      loss += trip_loss.mean()
 
     loss.backward()
     train_loss += loss.item()

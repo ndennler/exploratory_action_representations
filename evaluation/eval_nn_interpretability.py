@@ -4,6 +4,8 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 
+from sklearn.random_projection import GaussianRandomProjection
+
 TASK_INDEX_MAPPING = {'idle': 0, 'searching': 1, 'has_information': 2, 'has_item': 3}
 # load in ranking data from study 2
 results = []
@@ -52,8 +54,48 @@ for method in ['random', 'contrastive+autoencoder', 'VAE', 'autoencoder', 'contr
                     worst = np.max(distances)
                     min_distances.append({'dist' : worst , 'method': method, 'modality': mod})
 
+
+#do for pretrained now....
+for modality in ['visual', 'auditory', 'kinesthetic']:
+        for result in results:
+            if result['modality'] == modality:
+                #get relevant exemplars
+                exemplars = exemplar_data.query('signal == @result["signal"]')[modality].values
+                exemplars = exemplars[exemplars >= 0]
+
+                for em_size in [8, 16, 32, 64, 128]:
+                    #get the embedding space
+                    if modality == 'kinesthetic':
+                        embeds = np.load('../data/kinetic/xclip_embeds.npy')
+                    elif modality == 'visual':
+                        embeds = np.load('../data/visual/xclip_embeds.npy')
+                    else:
+                        embeds = np.load('../data/auditory/AST_embeds.npy')
+
+                    rp = GaussianRandomProjection(n_components=em_size)
+                    reduced_array = rp.fit_transform(embeds)
+                    reduced_array = embeds
+                    embeds = np.tile(reduced_array[:, np.newaxis, :], (1, 4, 1))
+                    
+                    query_vector = embeds[result['id'], TASK_INDEX_MAPPING[result['signal']]]
+                    exemplar_vectors = embeds[exemplars, TASK_INDEX_MAPPING[result['signal']]]
+
+                    #calculate euclidean distances
+                    distances = np.linalg.norm(exemplar_vectors - query_vector, axis=1) 
+                    #calculate cosine similarities
+                    distances = np.dot(exemplar_vectors, query_vector) / (np.linalg.norm(exemplar_vectors) * np.linalg.norm(query_vector))  
+                    
+                    mod= 'kinetic' if modality == 'kinesthetic' else modality
+
+                    best = np.min(distances)
+                    worst = np.max(distances)
+                    min_distances.append({'dist' : worst , 'method': 'pretrained', 'modality': mod})
+
+
 min_distances = pd.DataFrame(min_distances)
 df = min_distances
+
+
 
 # sns.barplot(data=min_distances, x='modality', y='dist', hue='method', )
 # plt.show()
@@ -67,6 +109,7 @@ plt.rcParams['font.size'] = 14
 # Mapping method names to labels
 name2label = {
     'random': 'Random',
+    'pretrained': 'Pretrained',
     'autoencoder': 'AE',
     'VAE': 'VAE',
     'contrastive': 'CLEA',
@@ -77,7 +120,7 @@ name2label = {
 df['method'] = df['method'].apply(lambda x: name2label[x])
 
 # Define the hue order and palette
-hue_order = ['random', 'autoencoder', 'VAE', 'contrastive', 'contrastive+autoencoder', 'contrastive+VAE']
+hue_order = ['random', 'pretrained', 'autoencoder', 'VAE', 'contrastive', 'contrastive+autoencoder', 'contrastive+VAE']
 hue_order = [name2label[h] for h in hue_order]
 palette = {
     'CLEA': '#ff91af',
@@ -85,6 +128,7 @@ palette = {
     'CLEA+VAE': '#f7cad0',
     'VAE': '#b6e2d3',
     'Random': '#8f7073',
+    'Pretrained': '#aaaaaa',
     'AE': '#86a79c'
 }
 
@@ -117,8 +161,8 @@ for i, patch in enumerate(ax.patches):
 # Reorder legend
 reorder = lambda hl, nc: (sum((lis[i::nc] for i in range(nc)), []) for lis in hl)
 h_l = ax.get_legend_handles_labels()
-ax.legend(*reorder(h_l, 3), ncol=3, bbox_to_anchor=(.5, 1.2), loc='upper center')
-
+ax.legend(*reorder(h_l, 4), ncol=4, bbox_to_anchor=(.5, 1.2), loc='upper center')
+ax.set_xticklabels(['Visual', 'Auditory', 'Kinetic'])
 sns.despine()
 plt.tight_layout()
 plt.show()

@@ -32,7 +32,7 @@ for result in os.listdir('results'):
                 if to_add not in transitives:
                     transitives.append(to_add)
 
-    dataset = comps + transitives
+    dataset = comps #+ transitives
     train = int(len(dataset)*.7)
     np.random.shuffle(dataset)
     print(train, len(dataset) - train)

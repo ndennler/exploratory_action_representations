@@ -82,13 +82,15 @@ class ChoiceDataset(Dataset):
 
 
 class RawChoiceDataset(Dataset):
-    def __init__(self, df, transform=None, kind='visual', data_dir='./data/'):
+    def __init__(self, df, transform=None, kind='visual', data_dir='./data/', weighted=False):
 
         self.data = df
 
         self.transform = transform
         self.kind = kind
         self.indexer_csv_location = data_dir + 'all_data.csv'
+
+        self.reweight = weighted
         
         if kind == 'visual':
             self.stimulus_mapping = pd.read_csv(self.indexer_csv_location).query('type=="Video"')
@@ -155,7 +157,10 @@ class RawChoiceDataset(Dataset):
             anchor = self.stimulus_array[self.get_stimulus_fname(int(anchor_id)), :] * 25
             positive  = self.stimulus_array[self.get_stimulus_fname(int(positive_id)), :] * 25
             negative = self.stimulus_array[self.get_stimulus_fname(int(negative_id)), :] * 25
-
+        
+        if self.reweight:
+            return self.transform(anchor),self.transform(positive),self.transform(negative), torch.tensor(d['weight'])
+        
         return self.transform(anchor),self.transform(positive),self.transform(negative)
         
 

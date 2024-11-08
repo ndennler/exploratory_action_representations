@@ -25,7 +25,7 @@ import numpy as np
 # Minimality -- AUC?
 df = pd.read_csv('linear_results.csv')
 def get_auc(m):
-    return np.trapezoid(np.fromstring(m[1:-1], sep=' '), dx=1/100)
+    return np.trapz(np.fromstring(m[1:-1], sep=' '), dx=1/100)
 
 df['auc'] = df['m'].apply(get_auc)
 
@@ -71,11 +71,15 @@ for modality in ['visual', 'auditory', 'kinetic']:
 
 
 #Simplicity -- AUC
-# def get_auc(m):
-#     return np.trapz(np.fromstring(m[1:-1], sep=' '))
+def get_auc(m):
+    return np.trapz(np.fromstring(m[1:-1], sep=' '), dx=1/100)
 
-# df = pd.read_csv('linear_results.csv')
-# df['AUC'] = df['m'].apply(get_auc)
+df = pd.read_csv('linear_results.csv')
+df = pd.read_csv('linear_pretrained_results.csv')
+df['AUC'] = df['m'].apply(get_auc)
+
+print(df.groupby(['modality', 'dim_embedding'])['AUC'].mean().round(3))
+
 
 # for modality in [ 'visual', 'auditory', 'kinetic']:
 #     stats_df = df.query(f'modality == "{modality}" and dim_embedding == 8')

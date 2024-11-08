@@ -98,8 +98,8 @@ def generate_xclip_embeddings_movement():
         processor = AutoProcessor.from_pretrained("microsoft/xclip-base-patch32")
         model = AutoModel.from_pretrained("microsoft/xclip-base-patch32")
 
-        print(video.shape)
-        print()
+        # print(video.shape)
+        # print()
 
         inputs = processor(videos=list(video), return_tensors="pt")
 
@@ -108,7 +108,6 @@ def generate_xclip_embeddings_movement():
 
 
     np.save('../data/kinetic/xclip_embeds.npy', xclip_embeds)
-
 
 def generate_AST_features():
     transformers.utils.logging.set_verbosity_error()

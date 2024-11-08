@@ -10,9 +10,9 @@ from clea.dataloaders.exploratory_loaders import RawChoiceDataset
 from torch.utils.data import DataLoader
 
 def get_dataloader(batch_size: int, modality: str, signal: str):
-    df = pd.read_csv('../data/plays_and_options.csv') #TODO: make this changeable
+    df = pd.read_csv('../data/plays_and_options_weighted.csv') #TODO: make this changeable
     df = df.query(f'type == "{modality}" & signal == "{signal}"')
-    dataset = RawChoiceDataset(df, kind=modality, transform=torch.Tensor, data_dir='../data/')
+    dataset = RawChoiceDataset(df, kind=modality, transform=torch.Tensor, data_dir='../data/', weighted=True)
     embedding_dataloader = DataLoader(dataset, batch_size=batch_size)
 
     return embedding_dataloader, dataset.get_input_dim()
@@ -35,11 +35,11 @@ def get_model_and_loss_fn(model_type: str,
   
     if model_type == 'contrastive':
         if modality == 'auditory':
-            return RawAudioEncoder(input_dim, hidden_dim, latent_dim, device=device), nn.TripletMarginLoss(margin=.1)
+            return RawAudioEncoder(input_dim, hidden_dim, latent_dim, device=device), nn.TripletMarginLoss(margin=.1, reduction='none')
         elif modality == 'visual':
-            return RawImageEncoder(input_dim, hidden_dim, latent_dim, device=device), nn.TripletMarginLoss(margin=.1)
+            return RawImageEncoder(input_dim, hidden_dim, latent_dim, device=device), nn.TripletMarginLoss(margin=.1, reduction='none')
         elif modality == 'kinesthetic':
-            return RawSequenceEncoder(input_size=3, hidden_size=latent_dim, num_layers=2, device=device), nn.TripletMarginLoss(margin=2)
+            return RawSequenceEncoder(input_size=3, hidden_size=latent_dim, num_layers=2, device=device), nn.TripletMarginLoss(margin=2, reduction='none')
 
     elif model_type == 'random':
         if modality == 'auditory':
@@ -101,8 +101,9 @@ if __name__ == '__main__':
     EMBEDDING_DIM = 128
     LR = 1e-3
     NUM_EPOCHS = 300
-    DEVICE = 'cuda:0'
-    for EMBEDDING_DIM in [8,16,32,64]:
+    DEVICE = 'cpu'
+
+    for EMBEDDING_DIM in [8, 16, 32, 64, 128]:
         for modality in ['auditory', 'visual','kinesthetic']:
             if modality == 'kinesthetic':
                 margin = 2
@@ -111,7 +112,7 @@ if __name__ == '__main__':
 
             for signal in ['idle', 'searching', 'has_item', 'has_information']:
                 # for model_type in ['contrastive+VAE', 'contrastive', 'random', 'autoencoder', 'VAE', 'contrastive+autoencoder']:
-                for model_type in ['autoencoder']:
+                for model_type in ['contrastive+VAE', 'contrastive', 'contrastive+autoencoder']:
                             
                     print(f'Training {modality} modality;  {signal} signal; {model_type} model;')
 
@@ -133,14 +134,14 @@ if __name__ == '__main__':
 
                         for i in tqdm(range(NUM_EPOCHS)):
                             iterations, avg_loss = train_single_epoch(embedding_type=model_type, model=model, 
-                                                    loss_fn=loss_fn, data_loader=data, optimizer=optimizer, epoch=i, device=DEVICE, margin=margin)
+                                                    loss_fn=loss_fn, data_loader=data, optimizer=optimizer, epoch=i, device=DEVICE, margin=margin, weighted=True)
                             training_results.append({'iters': iterations, 'loss': avg_loss})
                             tqdm.write(f'Epoch {i} loss: {avg_loss}')
 
                         pd.DataFrame(training_results).to_csv(f'../data/trained_models/{modality}&independent&raw&{model_type}&{signal}&{EMBEDDING_DIM}.csv')
 
                     #4. save model and data
-                    torch.save(model, f'../data/trained_models/{modality}&independent&raw&{model_type}&{signal}&{EMBEDDING_DIM}.pth')
+                    torch.save(model, f'../data/trained_models/{modality}&independent&weighted&{model_type}&{signal}&{EMBEDDING_DIM}.pth')
                 
 
 ############################################################################################################
