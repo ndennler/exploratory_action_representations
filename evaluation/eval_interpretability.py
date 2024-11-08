@@ -25,15 +25,14 @@ for f in os.listdir('../data_collection/results'):
 print(len(results))
 
 hue_order = ['random', 'autoencoder', 'VAE', 'contrastive', 'contrastive+autoencoder', 'contrastive+VAE']
-palette = ['#999999', '#0033cc', '#3399ff', 'tab:orange', '#ff6600', '#ff9966']
 
 palette = {
-    'contrastive': 'tab:orange',
-    'contrastive+autoencoder': '#d62b0d',
-    'contrastive+VAE': '#decb3a',
-    'VAE': '#3399ff',
-    'random': '#999999',
-    'autoencoder': '#0033cc'
+    'contrastive': '#ff91af',
+    'contrastive+autoencoder': '#e05780',
+    'contrastive+VAE': '#f7cad0',
+    'VAE': '#b6e2d3',
+    'random': '#8f7073',
+    'autoencoder': '#86a79c'
 }
 
 plt.rcParams["font.family"] = "serif"
@@ -49,5 +48,16 @@ plt.xlabel('')
 plt.ylabel('Number of Users')
 ax = plt.gca()
 ax.set_xticklabels(['Random', 'AE', 'VAE', 'CLEA', 'CLEA\n+AE', 'CLEA\n+VAE'])
+
+for patch in ax.patches:
+    label = patch.get_x() + patch.get_width() / 2  # Get the bar's x position
+    method = hue_order[int(label)]
+    
+    if 'contrastive' in method:
+        patch.set_edgecolor('#ffcc00')  # Set the outline color to yellow
+        patch.set_linewidth(2)  # Make the outline a bit thicker
+
+plt.grid(axis='x')
+sns.despine()
 plt.tight_layout()
 plt.show()

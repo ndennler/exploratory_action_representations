@@ -1,0 +1,12 @@
+,time,signal,type,query,choice
+0,127.01747274398804,has_information,visual,,3
+1,141.04845476150513,has_information,visual,"685,467,1367",1
+2,167.27878260612488,has_information,auditory,,1
+3,179.80042457580566,has_information,kinesthetic,,0
+4,190.71107578277588,has_information,visual,"685,467,1367",0
+5,212.31591415405273,has_information,auditory,"350,404,737",0
+6,229.62417149543762,has_information,kinesthetic,"835,1961,1811",0
+7,266.9967029094696,has_information,kinesthetic,"835,1961,1811",1
+8,288.50577449798584,has_information,visual,"685,830,420",1
+9,296.79877281188965,has_information,auditory,"350,404,737",0
+10,310.6245036125183,has_information,kinesthetic,"1964,1961,667",1

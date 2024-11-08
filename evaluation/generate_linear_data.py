@@ -92,4 +92,4 @@ for dim_embedding in [8,16,32,64,128]:
 
         # plt.legend()
         # plt.show()
-pd.DataFrame(results).to_csv('linear_results_with_pid.csv', index=False)
+pd.DataFrame(results).to_csv('linear_results_32.csv', index=False)

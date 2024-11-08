@@ -85,6 +85,30 @@ def generate_xclip_embeddings():
 
     np.save('../data/visual/xclip_embeds.npy', xclip_embeds)
 
+def generate_xclip_embeddings_movement():
+    all_videos = pd.read_csv('../data/all_data.csv').query('type=="Movement"')
+    xclip_embeds = np.zeros((all_videos['id'].max() + 1, 512)) #outputs 512 features
+
+    for i in tqdm(range(len(all_videos))):
+        row = all_videos.iloc[i]
+        container = av.open('../data/kinetic/kin/' + str(row['id']) + '.mp4')
+        indices = sample_frame_indices(clip_len=8, frame_sample_rate=1, seg_len=container.streams.video[0].frames)
+        video = read_video_pyav(container, indices)
+
+        processor = AutoProcessor.from_pretrained("microsoft/xclip-base-patch32")
+        model = AutoModel.from_pretrained("microsoft/xclip-base-patch32")
+
+        print(video.shape)
+        print()
+
+        inputs = processor(videos=list(video), return_tensors="pt")
+
+        video_features = model.get_video_features(**inputs)
+        xclip_embeds[row['id']] = video_features.detach().numpy()[0]
+
+
+    np.save('../data/kinetic/xclip_embeds.npy', xclip_embeds)
+
 
 def generate_AST_features():
     transformers.utils.logging.set_verbosity_error()
@@ -112,5 +136,5 @@ def generate_AST_features():
     np.save('../data/auditory/ast_embeds.npy', AST_features)
 
 if __name__ == '__main__':
-    # generate_xclip_embeddings()
-    generate_AST_features()
+    generate_xclip_embeddings_movement()
+    # generate_AST_features()

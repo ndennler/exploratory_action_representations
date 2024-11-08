@@ -2,14 +2,15 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-df = pd.read_csv('nn_results3.csv')
-# df = df.query('modality != "auditory"')
+# Load the data
+df = pd.read_csv('nn_results.csv')
 EM = 128
 
 fig = plt.figure(figsize=(6.5, 5.5))
 plt.rcParams["font.family"] = "serif"
 plt.rcParams['font.size'] = 14
 
+# Mapping method names to labels
 name2label = {
     'random': 'Random',
     'autoencoder': 'AE',
@@ -21,34 +22,49 @@ name2label = {
 
 df['method'] = df['method'].apply(lambda x: name2label[x])
 
+# Define the hue order and palette
 hue_order = ['random', 'autoencoder', 'VAE', 'contrastive', 'contrastive+autoencoder', 'contrastive+VAE']
 hue_order = [name2label[h] for h in hue_order]
-palette = ['#999999', '#0033cc', '#3399ff', 'tab:orange', '#ff6600', '#ff9966']
-
 palette = {
-    'CLEA': 'tab:orange',
-    'CLEA+AE': '#d62b0d',
-    'CLEA+VAE': '#decb3a',
-    'VAE': '#3399ff',
-    'Random': '#999999',
-    'AE': '#0033cc'
+    'CLEA': '#ff91af',
+    'CLEA+AE': '#e05780',
+    'CLEA+VAE': '#f7cad0',
+    'VAE': '#b6e2d3',
+    'Random': '#8f7073',
+    'AE': '#86a79c'
 }
+
+# Create the bar plot
 ax = sns.barplot(data=df.query(f'embedding_size == {EM}'), x='modality', y='accuracy', hue='method', 
-            hue_order=hue_order, palette=palette, capsize=.1, errwidth=0.8, order=['visual', 'auditory','kinetic'])
+                 hue_order=hue_order, palette=palette, capsize=.1, errwidth=0.8, 
+                 order=['visual', 'auditory', 'kinetic'])
 
-
+# Set grid and labels
 ax.set_axisbelow(True)
 ax.grid(color='#DEDEDE', linestyle='dashed')
 plt.xlabel('')
 plt.ylabel('Predicted Choice Accuracy')
 plt.ylim(0.5, 1)
 
-reorder=lambda hl,nc:(sum((lis[i::nc]for i in range(nc)),[])for lis in hl)
+# Add yellow outline around bars for methods containing "CLEA"
+for i, patch in enumerate(ax.patches):
+    print(patch.get_facecolor())
+
+    if 'CLEA' in patch.get_label():
+        patch.set_edgecolor('#ffcc00')  # Set edge color to yellow
+        patch.set_linewidth(1.5)  # Set the edge width
+
+    elif patch.get_facecolor()[0] > .8:
+        patch.set_edgecolor('#ffcc00')  # Set edge color to yellow
+        patch.set_linewidth(1.5)  # Set the edge width
+    else:
+        patch.set_edgecolor('none')  # No edge color for non-CLEA methods
+
+# Reorder legend
+reorder = lambda hl, nc: (sum((lis[i::nc] for i in range(nc)), []) for lis in hl)
 h_l = ax.get_legend_handles_labels()
 ax.legend(*reorder(h_l, 3), ncol=3, bbox_to_anchor=(.5, 1.2), loc='upper center')
 
-# plt.legend(ncol=6, bbox_to_anchor=(1.1, 1.15), prop={'size': 10})
-plt.xticks([0, 1, 2], ['Visual', 'Auditory', 'Kinetic'])
-
+sns.despine()
 plt.tight_layout()
 plt.show()
